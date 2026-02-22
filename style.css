@@ -1,0 +1,50 @@
+body {
+    font-family:'Times New Roman', Times, serif;
+    margin: 0;
+    padding: 0;
+}
+
+nav {
+    background-color: rgb(100, 97, 251);
+    padding: 5px;
+    text-align: center;
+}
+nav ul {
+    list-style-type: none;
+    padding: 5px;
+    margin: 5px;
+}
+nav ul li {                       
+    display: inline;
+    margin-right: 20px;
+}
+.headers a {
+    color: rgb(2, 252, 64);
+    font-size: 20px;
+    text-decoration: none;
+}
+
+section {
+    background-color: rgb(135, 133, 248);
+    padding: 20px;
+    text-align: center;
+}
+
+.paths h3 {
+    font-size: 30px;
+}
+.card {
+    font-size: 20px;
+}
+.daily{
+    font-size: 20px;
+}
+.para {
+    font-size: 30px;
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: rgb(100, 97, 251);
+}
