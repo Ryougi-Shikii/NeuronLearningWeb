@@ -1,46 +1,72 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Daily Quiz</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Daily Quiz | NeuroLearn</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<!-- Navigation -->
-    <header class="navbar">
-        <div class="logo">🧠 NeuroLearn</div>
-        <nav>
-            <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="learn.html">Learn</a></li>
-                <li><a href="daily.html">Daily Quiz</a></li>
-                <li><a href="profile.html">Profile</a></li>
-            </ul>
-        </nav>
-    </header>
+<!-- NAVBAR -->
 
-<main>
-  <h1>Daily Neural Network Quiz</h1>
-  <p>Streak: 🔥 4 days</p>
+<header class="navbar">
+    <div class="logo">🧠 NeuroLearn</div>
+    <nav>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="learn.html">Learn</a></li>
+            <li><a href="daily.html">Daily Quiz</a></li>
+            <li><a href="profile.html">Profile</a></li>
+        </ul>
+    </nav>
+</header>
 
-  <section class="quiz">
-    <h3>Question 1</h3>
-    <p>Which activation function is commonly used in hidden layers?</p>
+<!-- HERO -->
 
-    <form>
-      <label><input type="radio" name="q1"> Sigmoid</label><br>
-      <label><input type="radio" name="q1"> ReLU</label><br>
-      <label><input type="radio" name="q1"> Softmax</label><br>
-      <label><input type="radio" name="q1"> Linear</label><br>
+<section class="hero">
+    <div class="hero-content">
+        <h1>Daily Neural Network Challenge</h1>
+        <p>Practice a small concept every day and build real intuition 🔥</p>
+    </div>
+</section>
 
-      <button type="submit">Submit Answer</button>
-    </form>
-  </section>
-</main>
+<!-- QUIZ -->
+
+<section class="learning-section">
+    <h2>Today's Question</h2>
+
+<div class="card-container">
+    <div class="card">
+
+        <h3>Which activation function is most commonly used in hidden layers?</h3>
+
+        <form>
+            <p><label><input type="radio" name="q1"> Sigmoid</label></p>
+            <p><label><input type="radio" name="q1"> ReLU</label></p>
+            <p><label><input type="radio" name="q1"> Softmax</label></p>
+            <p><label><input type="radio" name="q1"> Linear</label></p>
+
+            <br>
+            <button type="submit">Submit Answer</button>
+        </form>
+
+    </div>
+</div>
+
+</section>
+
+<!-- STREAK SECTION -->
+
+<section class="challenge">
+    <h2>Your Streak: 🔥 4 Days</h2>
+    <p>Come back tomorrow for a new neural network problem!</p>
+</section>
 
 <footer>
-  <p>Come back tomorrow for a new quiz!</p>
+    <p>© 2026 NeuroLearn</p>
 </footer>
 
 </body>
