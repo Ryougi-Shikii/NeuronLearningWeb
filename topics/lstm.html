@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LSTM — NeuroLearn</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>:root { --topic-color: var(--lstm); }</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="../index.html"><span class="dot"></span> NeuroLearn</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../learn.html">Learn</a></li>
+    <li><a href="../quiz.html">Daily Quiz</a></li>
+    <li><a href="../leaderboard.html">Leaderboard</a></li>
+    <li><a href="../glossary.html">Glossary</a></li>
+    <li><a href="../profile.html">Profile</a></li>
+  </ul>
+  <div class="nav-user">
+    <span class="nav-streak" id="nav-streak" style="display:none"></span>
+    <span class="nav-points" id="nav-points" style="display:none"></span>
+    <button class="btn-nav" id="btn-signin">Sign in</button>
+    <button class="btn-nav" id="btn-signout" style="display:none">Sign out</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="topic-header">
+    <div class="topic-breadcrumb"><a href="../learn.html">Learn</a> / <span style="color:var(--lstm)">LSTM</span></div>
+    <span class="topic-badge" style="color:var(--lstm);background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.25)">04 · Memory</span>
+    <h1 class="topic-h1">Long Short-Term<br>Memory</h1>
+    <p class="topic-intro">LSTMs solve the vanishing gradient problem by introducing a dedicated memory cell and gating mechanisms that control what to remember, forget, and output.</p>
+    <div class="topic-nav-pills">
+      <button class="pill active" onclick="showSection('intro')">The Problem</button>
+      <button class="pill" onclick="showSection('cell')">Cell State</button>
+      <button class="pill" onclick="showSection('gates')">Gates</button>
+      <button class="pill" onclick="showSection('gru')">GRU</button>
+    </div>
+  </div>
+
+  <div class="topic-content">
+    <div class="content-block active" id="block-intro">
+      <div class="content-section">
+        <h3>The Problem LSTM Solves</h3>
+        <p>Vanilla RNNs fail to learn long-range dependencies because gradients vanish over many time steps. The network effectively forgets what happened more than ~10 steps ago.</p>
+        <p>LSTM (Hochreiter & Schmidhuber, 1997) introduces a <strong>cell state</strong> — a separate "memory highway" that can carry information across hundreds of steps with minimal modification, solving the gradient problem.</p>
+        <div class="highlight-box">
+          <strong>Analogy</strong>
+          Imagine reading a 500-page novel. A vanilla RNN is like only remembering the last paragraph. An LSTM is like keeping sticky notes — you decide what's important to write down (input gate), what old notes to throw away (forget gate), and what to read when you need to answer a question (output gate).
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block" id="block-cell">
+      <div class="content-section">
+        <h3>The Cell State — The Memory Highway</h3>
+        <p>The cell state Cₜ runs through the entire sequence, only modified by two gentle operations — a multiplicative forget and an additive input. This additive path is what allows gradients to flow without vanishing.</p>
+        <div class="formula-box">
+Cₜ = fₜ ⊙ C₍ₜ₋₁₎  +  iₜ ⊙ C̃ₜ
+         ↑                ↑
+    (forget old)    (add new info)
+        </div>
+        <p>The ⊙ symbol means element-wise multiplication. <strong>fₜ</strong> decides what fraction of the old cell state to keep. <strong>iₜ ⊙ C̃ₜ</strong> is the new candidate information weighted by how much to add.</p>
+        <div class="diagram-wrap">
+          <svg class="diagram-canvas" viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg">
+            <!-- cell state highway -->
+            <line x1="20" y1="40" x2="580" y2="40" stroke="#f97316" stroke-width="3"/>
+            <!-- forget gate -->
+            <circle cx="150" cy="40" r="18" fill="#111827" stroke="#f97316" stroke-width="2"/>
+            <text x="150" y="45" fill="#f97316" font-family="Space Mono,monospace" font-size="14" text-anchor="middle">×</text>
+            <!-- input gate add -->
+            <circle cx="380" cy="40" r="18" fill="#111827" stroke="#f97316" stroke-width="2"/>
+            <text x="380" y="45" fill="#f97316" font-family="Space Mono,monospace" font-size="16" text-anchor="middle">+</text>
+            <!-- forget gate block -->
+            <rect x="100" y="110" width="100" height="50" rx="6" fill="#1a2340" stroke="#4f8ef7" stroke-width="1.5"/>
+            <text x="150" y="140" fill="#4f8ef7" font-family="Space Mono,monospace" font-size="9" text-anchor="middle">forget gate</text>
+            <text x="150" y="153" fill="#4d6490" font-family="Space Mono,monospace" font-size="8" text-anchor="middle">σ(Wf·[h,x]+bf)</text>
+            <line x1="150" y1="110" x2="150" y2="58" stroke="#4f8ef7" stroke-width="1.5" stroke-dasharray="3"/>
+            <!-- input gate block -->
+            <rect x="220" y="110" width="100" height="50" rx="6" fill="#1a2340" stroke="#00d4aa" stroke-width="1.5"/>
+            <text x="270" y="140" fill="#00d4aa" font-family="Space Mono,monospace" font-size="9" text-anchor="middle">input gate</text>
+            <text x="270" y="153" fill="#4d6490" font-family="Space Mono,monospace" font-size="8" text-anchor="middle">σ(Wi·[h,x]+bi)</text>
+            <!-- candidate block -->
+            <rect x="330" y="110" width="100" height="50" rx="6" fill="#1a2340" stroke="#7c5cfc" stroke-width="1.5"/>
+            <text x="380" y="140" fill="#7c5cfc" font-family="Space Mono,monospace" font-size="9" text-anchor="middle">candidate</text>
+            <text x="380" y="153" fill="#4d6490" font-family="Space Mono,monospace" font-size="8" text-anchor="middle">tanh(Wc·[h,x]+bc)</text>
+            <!-- output gate block -->
+            <rect x="460" y="110" width="100" height="50" rx="6" fill="#1a2340" stroke="#ec4899" stroke-width="1.5"/>
+            <text x="510" y="140" fill="#ec4899" font-family="Space Mono,monospace" font-size="9" text-anchor="middle">output gate</text>
+            <text x="510" y="153" fill="#4d6490" font-family="Space Mono,monospace" font-size="8" text-anchor="middle">σ(Wo·[h,x]+bo)</text>
+            <!-- multiply for candidate contribution -->
+            <line x1="270" y1="110" x2="270" y2="80" stroke="#00d4aa" stroke-width="1" stroke-dasharray="3"/>
+            <line x1="380" y1="110" x2="380" y2="58" stroke="#7c5cfc" stroke-width="1" stroke-dasharray="3"/>
+            <!-- output -->
+            <line x1="510" y1="110" x2="510" y2="58" stroke="#ec4899" stroke-width="1" stroke-dasharray="3"/>
+            <!-- labels -->
+            <g fill="#4d6490" font-family="Space Mono,monospace" font-size="9" text-anchor="middle">
+              <text x="300" y="210">← Cell State Cₜ flows left to right →</text>
+            </g>
+            <text x="20" y="30" fill="#f97316" font-family="Space Mono,monospace" font-size="9">C₍ₜ₋₁₎</text>
+            <text x="545" y="30" fill="#f97316" font-family="Space Mono,monospace" font-size="9">Cₜ</text>
+          </svg>
+          <div class="diagram-label">LSTM cell — the orange highway is the cell state, gates modulate what passes through</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block" id="block-gates">
+      <div class="content-section">
+        <h3>The Three Gates</h3>
+        <p>Every gate is a sigmoid-activated layer outputting values in (0,1). Think of 0 as "block everything" and 1 as "let everything through".</p>
+        <div class="key-points">
+          <div class="key-point" style="border-color:rgba(79,142,247,0.3)">
+            <div class="kp-label" style="color:var(--ann)">Forget Gate fₜ</div>
+            <p>Decides what to erase from the cell state. fₜ = σ(Wf · [h₍ₜ₋₁₎, xₜ] + bf). Near 0 → forget. Near 1 → keep.</p>
+          </div>
+          <div class="key-point" style="border-color:rgba(0,212,170,0.3)">
+            <div class="kp-label" style="color:var(--rnn)">Input Gate iₜ</div>
+            <p>Decides what new information to write. iₜ = σ(Wi · [h, x] + bi). Controls how much of the candidate C̃ₜ to add.</p>
+          </div>
+          <div class="key-point" style="border-color:rgba(236,72,153,0.3)">
+            <div class="kp-label" style="color:var(--transformer)">Output Gate oₜ</div>
+            <p>Decides what to expose as hidden state. hₜ = oₜ ⊙ tanh(Cₜ). The output that flows to the next layer.</p>
+          </div>
+        </div>
+        <div class="highlight-box">
+          <strong>Why sigmoid gates work</strong>
+          Sigmoid squashes to (0,1). Element-wise multiplying by a sigmoid gate is like a soft switch — you can partially remember, partially forget. This differentiability is what makes the gradients flow during training.
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block" id="block-gru">
+      <div class="content-section">
+        <h3>GRU — Gated Recurrent Unit</h3>
+        <p>GRU (Cho et al., 2014) is a simplified LSTM. It merges the cell state and hidden state, and uses just two gates instead of three — making it faster to train with similar performance on many tasks.</p>
+        <div class="key-points">
+          <div class="key-point"><div class="kp-label">Reset Gate</div><p>Controls how much of the previous hidden state to forget when computing the candidate.</p></div>
+          <div class="key-point"><div class="kp-label">Update Gate</div><p>Combines the forget and input gate roles — decides how much of the new candidate to blend with the old state.</p></div>
+        </div>
+        <div class="highlight-box">
+          <strong>LSTM vs GRU</strong>
+          LSTM has more parameters and more expressive power. GRU is faster and works better on smaller datasets. In practice, try GRU first — it often matches LSTM with less compute. Both are largely superseded by Transformers for long sequences.
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-complete-bar">
+      <p>Finished reading? Mark this topic complete.</p>
+      <button class="btn-complete" id="btn-done" onclick="markDone()"><span>✓</span> Mark as Complete</button>
+    </div>
+    <div class="topic-next-nav">
+      <a class="next-card" href="rnn.html"><span class="next-label">← Previous</span><span class="next-title">RNN</span></a>
+      <a class="next-card right" href="transformer.html"><span class="next-label">Next →</span><span class="next-title">Transformer</span></a>
+    </div>
+  </div>
+  <footer style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--font-mono);font-size:.72rem;border-top:1px solid var(--border)">NeuroLearn</footer>
+</div>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" id="modal-close">✕</button>
+    <h2>Sign in to save progress</h2>
+    <p>Track which topics you've completed.</p>
+    <button class="btn-google" id="btn-google-signin">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"/>Continue with Google
+    </button>
+  </div>
+</div>
+
+<script type="module">
+  import { initApp, currentUser, openAuthModal, showToast } from '../app.js';
+  import { db, doc, updateDoc } from '../firebase.js';
+  function showSection(id) {
+    document.querySelectorAll('.content-block').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+    document.getElementById('block-'+id)?.classList.add('active');
+    event.target.classList.add('active');
+  }
+  window.showSection = showSection;
+  async function markDone() {
+    if (!currentUser) { openAuthModal(); return; }
+    try {
+      await updateDoc(doc(db,'users',currentUser.uid),{'completed.lstm':true});
+      const btn=document.getElementById('btn-done');
+      btn.classList.add('done'); btn.innerHTML='<span>✓</span> Completed!';
+      showToast('🎉 LSTM marked complete!','success');
+    } catch(e) { showToast('Error saving progress','error'); }
+  }
+  window.markDone = markDone;
+  initApp((user,profile)=>{
+    if(profile?.completed?.lstm){
+      const btn=document.getElementById('btn-done');
+      if(btn){btn.classList.add('done');btn.innerHTML='<span>✓</span> Completed!';}
+    }
+  });
+</script>
+</body>
+</html>

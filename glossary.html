@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Glossary — NeuroLearn</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html"><span class="dot"></span> NeuroLearn</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="learn.html">Learn</a></li>
+    <li><a href="quiz.html">Daily Quiz</a></li>
+    <li><a href="leaderboard.html">Leaderboard</a></li>
+    <li><a href="glossary.html">Glossary</a></li>
+    <li><a href="profile.html">Profile</a></li>
+  </ul>
+  <div class="nav-user">
+    <span class="nav-streak" id="nav-streak" style="display:none"></span>
+    <span class="nav-points" id="nav-points" style="display:none"></span>
+    <button class="btn-nav" id="btn-signin">Sign in</button>
+    <button class="btn-nav" id="btn-signout" style="display:none">Sign out</button>
+  </div>
+</nav>
+
+<div class="page">
+  <section class="section" style="padding-top:3rem;max-width:800px">
+    <div class="section-header">
+      <div class="section-label">Reference</div>
+      <h2>Glossary</h2>
+      <p>Every term you'll encounter in neural network literature — searchable, in plain language.</p>
+    </div>
+
+    <div class="glossary-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search terms... (e.g. backprop, softmax, LSTM)" autocomplete="off"/>
+      <span id="count" style="font-family:var(--font-mono);font-size:.7rem;color:var(--text3)"></span>
+    </div>
+
+    <div class="glossary-filters" id="filters">
+      <button class="pill active" onclick="filterCat('all',this)">All</button>
+      <button class="pill" onclick="filterCat('ANN',this)">ANN</button>
+      <button class="pill" onclick="filterCat('CNN',this)">CNN</button>
+      <button class="pill" onclick="filterCat('RNN',this)">RNN</button>
+      <button class="pill" onclick="filterCat('LSTM',this)">LSTM</button>
+      <button class="pill" onclick="filterCat('Transformer',this)">Transformer</button>
+      <button class="pill" onclick="filterCat('General',this)">General</button>
+    </div>
+
+    <div class="glossary-list" id="glossary-list"></div>
+
+    <div id="no-results" style="display:none;text-align:center;padding:3rem;color:var(--text3);font-family:var(--font-mono);font-size:.85rem">
+      No terms match your search.
+    </div>
+  </section>
+</div>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" id="modal-close">✕</button>
+    <h2>Welcome to NeuroLearn</h2>
+    <p>Sign in to track your progress and earn points.</p>
+    <button class="btn-google" id="btn-google-signin">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"/>Continue with Google
+    </button>
+  </div>
+</div>
+
+<script type="module">
+import { initApp } from './app.js';
+
+const TERMS = [
+  // ── GENERAL ──────────────────────────────────────────────────────
+  { term:'Gradient Descent', cat:'General', def:'An optimisation algorithm that iteratively adjusts weights in the direction of steepest decrease of the loss function. Each update: W ← W − η·∂L/∂W where η is the learning rate.' },
+  { term:'Learning Rate (η)', cat:'General', def:'A hyperparameter controlling how large each gradient step is. Too high → overshooting minima. Too low → very slow convergence. Typically 1e-4 to 1e-2. Often decayed over training.' },
+  { term:'Epoch', cat:'General', def:'One complete pass through the entire training dataset. Networks are typically trained for many epochs until the loss converges.' },
+  { term:'Mini-batch', cat:'General', def:'A subset of training data (e.g. 32–256 samples) used for one gradient update. Balances the noise of stochastic GD and the expense of full-batch GD.' },
+  { term:'Overfitting', cat:'General', def:'When a model learns the training data too well, including its noise, and generalises poorly to unseen data. High training accuracy, low test accuracy.' },
+  { term:'Regularisation', cat:'General', def:'Techniques that reduce overfitting: L1/L2 weight penalties, dropout, early stopping, data augmentation.' },
+  { term:'Dropout', cat:'General', def:'During training, randomly sets each neuron\'s output to zero with probability p (typically 0.2–0.5). Forces the network to learn redundant representations. Disabled at inference.' },
+  { term:'Batch Normalisation', cat:'General', def:'Normalises layer activations to zero mean and unit variance within each mini-batch. Stabilises training, enables higher learning rates, acts as mild regularisation.' },
+  { term:'Hyperparameter', cat:'General', def:'A parameter set before training whose value isn\'t learned from data — learning rate, batch size, number of layers, dropout rate, etc. Tuned by validation performance.' },
+  { term:'Loss Function', cat:'General', def:'Quantifies the difference between predicted and true outputs. Mean Squared Error for regression; Cross-Entropy for classification. Backprop computes its gradient w.r.t. all weights.' },
+  { term:'Cross-Entropy Loss', cat:'General', def:'L = −Σ y·log(ŷ). Penalises confident wrong predictions heavily. Standard loss for classification. Works with softmax outputs.' },
+  { term:'Weights & Biases', cat:'General', def:'The learnable parameters of a neural network. Weights W scale inputs; bias b shifts the activation. Together they define what the network "knows".' },
+  { term:'Inference', cat:'General', def:'Using a trained network to produce predictions on new, unseen data. Also called forward pass at test time.' },
+  // ── ANN ──────────────────────────────────────────────────────────
+  { term:'Perceptron', cat:'ANN', def:'The simplest neural unit — takes a weighted sum of binary inputs and outputs 1 if it exceeds a threshold, 0 otherwise. The historical precursor to modern neurons.' },
+  { term:'Activation Function', cat:'ANN', def:'A non-linear function applied after the weighted sum in each neuron. Without it, any stack of layers is equivalent to a single linear transformation. Common: ReLU, sigmoid, tanh.' },
+  { term:'ReLU', cat:'ANN', def:'Rectified Linear Unit: f(x) = max(0, x). Default activation for hidden layers. Computationally cheap, avoids vanishing gradients for positive inputs, but can "die" (stay at zero permanently).' },
+  { term:'Sigmoid', cat:'ANN', def:'σ(x) = 1/(1+e⁻ˣ). Squashes input to (0,1). Used in binary classification output layers. Suffers from vanishing gradients in deep networks — not recommended for hidden layers.' },
+  { term:'Softmax', cat:'ANN', def:'Converts a vector of raw scores (logits) into a probability distribution: softmax(xᵢ) = e^xᵢ / Σⱼ e^xⱼ. Every output in (0,1) and sums to 1. Standard multi-class output.' },
+  { term:'Backpropagation', cat:'ANN', def:'Algorithm to compute gradients of the loss w.r.t. every weight by applying the chain rule backwards through the network. Enables gradient descent training.' },
+  { term:'Forward Pass', cat:'ANN', def:'Passing input data through the network layer-by-layer from input to output to compute the prediction. Contrast with backward pass (backprop).' },
+  { term:'Universal Approximation Theorem', cat:'ANN', def:'A sufficiently wide neural network with one hidden layer can approximate any continuous function on a compact domain. Theoretical justification for using networks as general function approximators.' },
+  { term:'Vanishing Gradient', cat:'ANN', def:'During backpropagation through many layers, gradients can become exponentially small — early layers receive near-zero updates and stop learning. Common with sigmoid/tanh activations in deep networks.' },
+  // ── CNN ──────────────────────────────────────────────────────────
+  { term:'Convolution', cat:'CNN', def:'A mathematical operation that slides a small filter (kernel) across an input, computing dot products at each position to produce a feature map. Core operation of CNNs.' },
+  { term:'Filter / Kernel', cat:'CNN', def:'A small learnable weight matrix (e.g. 3×3) that slides across the input. Each filter detects a specific local pattern. A CNN layer has many filters, each producing one feature map.' },
+  { term:'Feature Map', cat:'CNN', def:'The output of applying one filter across an entire input. A 2D activation grid showing where and how strongly that filter\'s pattern appears in the input.' },
+  { term:'Padding', cat:'CNN', def:'"Same" padding adds zeros around the input border so output matches input size. "Valid" padding means no zeros — output is smaller than input. Controls spatial dimension preservation.' },
+  { term:'Stride', cat:'CNN', def:'Step size of the sliding filter. Stride=1 → dense output. Stride=2 → output dimensions halved. An alternative to pooling for downsampling.' },
+  { term:'Max Pooling', cat:'CNN', def:'Takes the maximum value within each pooling window (e.g. 2×2). Reduces spatial dimensions, provides translation invariance, and retains the strongest activation.' },
+  { term:'Translation Invariance', cat:'CNN', def:'A cat in the top-left and bottom-right of an image should both be detected as "cat." CNNs achieve this through weight sharing (convolution) and pooling.' },
+  { term:'Global Average Pooling', cat:'CNN', def:'Collapses each feature map to a single number (its average). Used just before the classification head in modern CNNs to reduce parameters vs. flattening.' },
+  // ── RNN ──────────────────────────────────────────────────────────
+  { term:'Hidden State', cat:'RNN', def:'A vector summarising everything the RNN has seen up to the current time step. Updated at each step: hₜ = tanh(Wₕ·h₍ₜ₋₁₎ + Wₓ·xₜ + b).' },
+  { term:'Recurrent Connection', cat:'RNN', def:'The connection from a neuron\'s output back to its own input at the next time step — what makes an RNN "recurrent." Enables memory across time.' },
+  { term:'BPTT (Backprop Through Time)', cat:'RNN', def:'Unrolling the RNN across time steps and applying backpropagation through the unrolled graph. Gradients are multiplied at each step, leading to vanishing/exploding gradient issues.' },
+  { term:'Gradient Clipping', cat:'RNN', def:'Capping the gradient norm to a maximum threshold before each update. Prevents exploding gradients in RNNs. A practical workaround rather than a fundamental solution.' },
+  { term:'Sequence-to-Sequence', cat:'RNN', def:'An architecture (often two RNNs: encoder + decoder) that maps an input sequence to an output sequence of potentially different length. E.g. machine translation.' },
+  // ── LSTM ─────────────────────────────────────────────────────────
+  { term:'Cell State', cat:'LSTM', def:'A separate memory vector in an LSTM that runs through time with minimal modification. Modified by multiplicative forgetting and additive input — provides a gradient highway.' },
+  { term:'Forget Gate', cat:'LSTM', def:'fₜ = σ(Wf·[h,x]+b). Decides what fraction of the old cell state to retain. Near 0 = forget completely; near 1 = keep exactly. The LSTM\'s mechanism for clearing irrelevant memory.' },
+  { term:'Input Gate', cat:'LSTM', def:'iₜ = σ(Wi·[h,x]+b). Controls how much new candidate information to write into the cell state. Works in tandem with the candidate vector C̃ₜ.' },
+  { term:'Output Gate', cat:'LSTM', def:'oₜ = σ(Wo·[h,x]+b). Decides what part of the cell state to expose as the hidden state: hₜ = oₜ ⊙ tanh(Cₜ). Controls what the LSTM outputs at this step.' },
+  { term:'GRU (Gated Recurrent Unit)', cat:'LSTM', def:'A simplified LSTM with two gates (reset and update) instead of three, and no separate cell state. Fewer parameters, similar performance. Often a good first choice for sequence tasks.' },
+  // ── TRANSFORMER ──────────────────────────────────────────────────
+  { term:'Self-Attention', cat:'Transformer', def:'Each position in a sequence computes attention weights over every other position — allowing any token to directly attend to any other token regardless of distance.' },
+  { term:'Query, Key, Value (Q, K, V)', cat:'Transformer', def:'Three vectors derived from each token. Q = "what am I looking for?", K = "what do I offer?", V = "what do I contribute?". Attention score = softmax(QKᵀ/√dₖ)·V.' },
+  { term:'Scaled Dot-Product Attention', cat:'Transformer', def:'Attention(Q,K,V) = softmax(QKᵀ/√dₖ)·V. The /√dₖ scaling prevents large dot products from pushing softmax into saturation, preserving gradient flow.' },
+  { term:'Multi-Head Attention', cat:'Transformer', def:'Running h parallel attention operations with different Q,K,V projections, then concatenating results. Each head can specialise in a different relationship type (syntax, semantics, position).' },
+  { term:'Positional Encoding', cat:'Transformer', def:'Sinusoidal or learned vectors added to token embeddings. Gives the Transformer information about token order — without it, attention is permutation-invariant and can\'t distinguish sequence order.' },
+  { term:'Encoder', cat:'Transformer', def:'The part of the Transformer that processes the input sequence with bidirectional self-attention. Produces contextualised representations. Used in BERT for understanding tasks.' },
+  { term:'Decoder', cat:'Transformer', def:'The part of the Transformer that generates output, using masked self-attention (can\'t see future tokens) and cross-attention (attends to encoder output). Used in GPT for generation.' },
+  { term:'Residual Connection', cat:'Transformer', def:'x → x + sublayer(x). Adds the sublayer\'s input directly to its output. Gives gradients a direct path backwards through very deep networks. Borrowed from ResNet.' },
+  { term:'Layer Normalisation', cat:'Transformer', def:'Normalises activations across feature dimensions (not batch). Applied before or after each sublayer in Transformers. Stabilises training of deep stacks.' },
+  { term:'Feed-Forward Network (FFN)', cat:'Transformer', def:'Two linear layers with ReLU between them, applied independently per token: x → ReLU(xW₁+b₁)W₂+b₂. Expands to 4×dmodel then contracts. Adds capacity beyond attention.' },
+  { term:'BERT', cat:'Transformer', def:'Bidirectional Encoder Representations from Transformers. Encoder-only Transformer pre-trained with masked language modelling. Fine-tuned for classification, QA, NER.' },
+  { term:'GPT', cat:'Transformer', def:'Generative Pre-trained Transformer. Decoder-only Transformer trained with next-token prediction (causal language modelling). Used for text generation, in-context learning.' },
+  { term:'Attention Mask', cat:'Transformer', def:'A matrix that prevents attention from attending to certain positions. Causal (look-ahead) mask in decoders: future tokens are masked to prevent information leakage during training.' },
+];
+
+let currentCat  = 'all';
+let currentQuery = '';
+
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('#filters .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+window.filterCat = filterCat;
+
+function toggleItem(el) {
+  el.classList.toggle('expanded');
+}
+
+function render() {
+  const q    = currentQuery.toLowerCase().trim();
+  const list = TERMS.filter(t => {
+    const matchCat  = currentCat === 'all' || t.cat === currentCat;
+    const matchQ    = !q || t.term.toLowerCase().includes(q) || t.def.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+
+  const container = document.getElementById('glossary-list');
+  const noRes     = document.getElementById('no-results');
+  const count     = document.getElementById('count');
+
+  count.textContent = `${list.length} term${list.length===1?'':'s'}`;
+
+  if (!list.length) {
+    container.innerHTML = '';
+    noRes.style.display = 'block';
+    return;
+  }
+  noRes.style.display = 'none';
+
+  container.innerHTML = list.map(t => `
+    <div class="glossary-item" onclick="this.classList.toggle('expanded')">
+      <div class="glossary-term-row">
+        <span class="glossary-term">${escapeHtml(t.term)}</span>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span class="glossary-cat">${t.cat}</span>
+          <span class="glossary-chevron">▾</span>
+        </div>
+      </div>
+      <div class="glossary-def">${escapeHtml(t.def)}</div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.getElementById('search-input').addEventListener('input', e => {
+  currentQuery = e.target.value;
+  render();
+});
+
+render();
+
+import { initApp } from './app.js';
+initApp();
+</script>
+</body>
+</html>

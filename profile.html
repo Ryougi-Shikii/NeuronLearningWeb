@@ -1,74 +1,237 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Profile | NeuroLearn</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile — NeuroLearn</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
-
 <body>
+<nav>
+  <a class="nav-logo" href="index.html"><span class="dot"></span> NeuroLearn</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="learn.html">Learn</a></li>
+    <li><a href="quiz.html">Daily Quiz</a></li>
+    <li><a href="leaderboard.html">Leaderboard</a></li>
+    <li><a href="glossary.html">Glossary</a></li>
+    <li><a href="profile.html">Profile</a></li>
+  </ul>
+  <div class="nav-user">
+    <span class="nav-streak" id="nav-streak" style="display:none"></span>
+    <span class="nav-points" id="nav-points" style="display:none"></span>
+    <button class="btn-nav" id="btn-signin">Sign in</button>
+    <button class="btn-nav" id="btn-signout" style="display:none">Sign out</button>
+  </div>
+</nav>
 
-<!-- NAVBAR -->
+<div class="page">
+  <!-- LOGGED OUT STATE -->
+  <div id="logged-out" style="display:none;text-align:center;padding:6rem 2rem">
+    <div style="font-size:3rem;margin-bottom:1rem">🧠</div>
+    <div style="font-family:var(--font-display);font-weight:700;font-size:1.5rem;margin-bottom:.5rem">Sign in to see your profile</div>
+    <div style="color:var(--text2);font-size:.9rem;margin-bottom:2rem">Track your progress, points, and streak.</div>
+    <button class="btn btn-primary" id="profile-signin-btn">Sign in with Google</button>
+  </div>
 
-<header class="navbar">
-    <div class="logo">🧠 NeuroLearn</div>
-    <nav>
-        <ul class="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="learn.html">Learn</a></li>
-            <li><a href="daily.html">Daily Quiz</a></li>
-            <li><a href="profile.html">Profile</a></li>
-        </ul>
-    </nav>
-</header>
+  <!-- LOADING -->
+  <div id="profile-loading" style="text-align:center;padding:6rem 2rem">
+    <div class="loading-spinner"></div>
+  </div>
 
-<!-- HERO -->
+  <!-- PROFILE -->
+  <div id="profile-content" class="profile-layout" style="display:none;padding-top:2.5rem">
 
-<section class="hero">
-    <div class="hero-content">
-        <h1>Account Login</h1>
-        <p>Sign in to continue your AI learning journey</p>
+    <!-- Header -->
+    <div class="profile-top">
+      <div class="profile-info">
+        <div id="profile-avatar" class="profile-avatar-placeholder">🧠</div>
+        <div>
+          <div class="profile-name" id="profile-name">—</div>
+          <div class="profile-email" id="profile-email">—</div>
+          <div style="font-family:var(--font-mono);font-size:.7rem;color:var(--text3);margin-top:.2rem" id="profile-joined"></div>
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-ghost" onclick="window.location.href='quiz.html'" style="font-size:.75rem">Take Today's Quiz →</button>
+      </div>
     </div>
-</section>
 
-<!-- LOGIN CARD -->
-
-<section class="learning-section">
-    <h2>Login</h2>
-
-<div class="card-container">
-    <div class="card">
-
-        <form>
-
-            <p>Email</p>
-            <input type="email" placeholder="Enter your email" required>
-
-            <br><br>
-
-            <p>Password</p>
-            <input type="password" placeholder="Enter your password" required>
-
-            <br><br>
-
-            <button type="submit">Login</button>
-
-            <br><br>
-
-            <p>New here? Create an account later.</p>
-
-        </form>
-
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val" id="stat-points" style="color:var(--accent3)">0</div>
+        <div class="stat-label">Total Points</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-streak" style="color:var(--accent4)">0</div>
+        <div class="stat-label">Day Streak 🔥</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-topics" style="color:var(--accent2)">0/5</div>
+        <div class="stat-label">Topics Done</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-quizzes" style="color:var(--accent)">0</div>
+        <div class="stat-label">Quizzes Taken</div>
+      </div>
     </div>
+
+    <!-- Streak Calendar -->
+    <div class="section-header" style="margin-top:1rem;margin-bottom:1rem">
+      <div class="section-label">Activity</div>
+      <h2 style="font-size:1.2rem">Last 30 Days</h2>
+    </div>
+    <div id="streak-calendar" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2rem"></div>
+
+    <!-- Topic Progress -->
+    <div class="section-header" style="margin-bottom:1rem">
+      <div class="section-label">Curriculum Progress</div>
+      <h2 style="font-size:1.2rem">Topics</h2>
+    </div>
+    <div class="topics-grid">
+      <a class="topic-status-card" href="topics/ann.html" style="text-decoration:none;color:inherit">
+        <div class="topic-status-dot" id="dot-ann"></div>
+        <div class="topic-status-name">ANN</div>
+        <div class="topic-status-pct" id="pct-ann">Not started</div>
+      </a>
+      <a class="topic-status-card" href="topics/cnn.html" style="text-decoration:none;color:inherit">
+        <div class="topic-status-dot" id="dot-cnn"></div>
+        <div class="topic-status-name">CNN</div>
+        <div class="topic-status-pct" id="pct-cnn">Not started</div>
+      </a>
+      <a class="topic-status-card" href="topics/rnn.html" style="text-decoration:none;color:inherit">
+        <div class="topic-status-dot" id="dot-rnn"></div>
+        <div class="topic-status-name">RNN</div>
+        <div class="topic-status-pct" id="pct-rnn">Not started</div>
+      </a>
+      <a class="topic-status-card" href="topics/lstm.html" style="text-decoration:none;color:inherit">
+        <div class="topic-status-dot" id="dot-lstm"></div>
+        <div class="topic-status-name">LSTM</div>
+        <div class="topic-status-pct" id="pct-lstm">Not started</div>
+      </a>
+      <a class="topic-status-card" href="topics/transformer.html" style="text-decoration:none;color:inherit">
+        <div class="topic-status-dot" id="dot-transformer"></div>
+        <div class="topic-status-name">Transformer</div>
+        <div class="topic-status-pct" id="pct-transformer">Not started</div>
+      </a>
+    </div>
+
+    <!-- Quiz History -->
+    <div class="section-header" style="margin-top:2rem;margin-bottom:1rem">
+      <div class="section-label">History</div>
+      <h2 style="font-size:1.2rem">Recent Quizzes</h2>
+    </div>
+    <div id="quiz-history" style="display:flex;flex-direction:column;gap:.5rem"></div>
+
+  </div>
 </div>
 
-</section>
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" id="modal-close">✕</button>
+    <h2>Sign in to NeuroLearn</h2>
+    <p>Track your progress, streaks, and compete on the leaderboard.</p>
+    <button class="btn-google" id="btn-google-signin">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"/>Continue with Google
+    </button>
+  </div>
+</div>
 
-<footer>
-    <p>© 2026 NeuroLearn</p>
-</footer>
+<script type="module">
+import { initApp, openAuthModal } from './app.js';
 
+document.getElementById('profile-signin-btn')?.addEventListener('click', openAuthModal);
+
+function buildCalendar(quizDone) {
+  const cal = document.getElementById('streak-calendar');
+  cal.innerHTML = '';
+  const today = new Date();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    const done = quizDone && quizDone[key];
+    const cell = document.createElement('div');
+    cell.title = key;
+    cell.style.cssText = `
+      width:24px;height:24px;border-radius:4px;
+      background:${done ? 'var(--accent3)' : 'var(--surface2)'};
+      border:1px solid ${done ? 'rgba(0,212,170,0.4)' : 'var(--border)'};
+      box-shadow:${done ? '0 0 6px rgba(0,212,170,0.3)' : 'none'};
+      transition:.2s;
+      cursor:default;
+    `;
+    cal.appendChild(cell);
+  }
+}
+
+function renderQuizHistory(quizDone) {
+  const cont = document.getElementById('quiz-history');
+  if (!quizDone || Object.keys(quizDone).length === 0) {
+    cont.innerHTML = '<div style="color:var(--text3);font-size:.85rem;padding:.5rem 0">No quizzes taken yet. <a href="quiz.html" style="color:var(--accent)">Take today\'s quiz →</a></div>';
+    return;
+  }
+  const entries = Object.entries(quizDone).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,10);
+  cont.innerHTML = entries.map(([date, data]) => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+      <div style="font-family:var(--font-mono);font-size:.75rem;color:var(--text2)">${date}</div>
+      <div style="display:flex;gap:.75rem;align-items:center">
+        <span style="font-size:.85rem;color:var(--text2)">Score: <strong style="color:var(--text)">${data.score}/5</strong></span>
+        <span style="font-family:var(--font-mono);font-size:.75rem;color:var(--accent3)">+${data.pts} pts</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+initApp((user, profile) => {
+  document.getElementById('profile-loading').style.display = 'none';
+
+  if (!user) {
+    document.getElementById('logged-out').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('profile-content').style.display = 'block';
+
+  // Avatar
+  if (user.photoURL) {
+    const av = document.getElementById('profile-avatar');
+    const img = document.createElement('img');
+    img.src = user.photoURL;
+    img.className = 'profile-avatar';
+    img.alt = user.displayName;
+    av.replaceWith(img);
+  }
+
+  document.getElementById('profile-name').textContent  = user.displayName || 'Learner';
+  document.getElementById('profile-email').textContent = user.email || '';
+
+  if (!profile) return;
+
+  if (profile.joinedAt?.toDate) {
+    document.getElementById('profile-joined').textContent = 'Joined ' + profile.joinedAt.toDate().toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  }
+
+  document.getElementById('stat-points').textContent  = (profile.points  || 0).toLocaleString();
+  document.getElementById('stat-streak').textContent  = profile.streak || 0;
+  document.getElementById('stat-quizzes').textContent = Object.keys(profile.quizDone || {}).length;
+
+  const topics = ['ann','cnn','rnn','lstm','transformer'];
+  let doneCount = 0;
+  topics.forEach(t => {
+    const done = profile.completed?.[t] || false;
+    if (done) doneCount++;
+    const dot  = document.getElementById(`dot-${t}`);
+    const pct  = document.getElementById(`pct-${t}`);
+    if (dot)  dot.classList.toggle('done', done);
+    if (pct)  pct.textContent = done ? '✓ Complete' : 'Not started';
+  });
+  document.getElementById('stat-topics').textContent = `${doneCount}/5`;
+
+  buildCalendar(profile.quizDone);
+  renderQuizHistory(profile.quizDone);
+});
+</script>
 </body>
 </html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RNN — NeuroLearn</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>:root { --topic-color: var(--rnn); }</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="../index.html"><span class="dot"></span> NeuroLearn</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../learn.html">Learn</a></li>
+    <li><a href="../quiz.html">Daily Quiz</a></li>
+    <li><a href="../leaderboard.html">Leaderboard</a></li>
+    <li><a href="../glossary.html">Glossary</a></li>
+    <li><a href="../profile.html">Profile</a></li>
+  </ul>
+  <div class="nav-user">
+    <span class="nav-streak" id="nav-streak" style="display:none"></span>
+    <span class="nav-points" id="nav-points" style="display:none"></span>
+    <button class="btn-nav" id="btn-signin">Sign in</button>
+    <button class="btn-nav" id="btn-signout" style="display:none">Sign out</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="topic-header">
+    <div class="topic-breadcrumb"><a href="../learn.html">Learn</a> / <span style="color:var(--rnn)">RNN</span></div>
+    <span class="topic-badge" style="color:var(--rnn);background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.25)">03 · Sequence</span>
+    <h1 class="topic-h1">Recurrent Neural<br>Networks</h1>
+    <p class="topic-intro">RNNs process sequences by maintaining a hidden state — a memory of what came before. They're the first architecture designed for time-series, text, and audio.</p>
+    <div class="topic-nav-pills">
+      <button class="pill active" onclick="showSection('intro')">Introduction</button>
+      <button class="pill" onclick="showSection('hidden')">Hidden State</button>
+      <button class="pill" onclick="showSection('bptt')">BPTT</button>
+      <button class="pill" onclick="showSection('limits')">Limitations</button>
+    </div>
+  </div>
+
+  <div class="topic-content">
+    <div class="content-block active" id="block-intro">
+      <div class="content-section">
+        <h3>Why Sequences Need Different Networks</h3>
+        <p>Standard ANNs assume inputs are independent. But language, audio, and time-series data have <strong>order that matters</strong>. "Dog bites man" ≠ "Man bites dog".</p>
+        <p>RNNs solve this by processing one element at a time while passing a <strong>hidden state</strong> forward — a compressed summary of everything seen so far.</p>
+        <div class="highlight-box">
+          <strong>Analogy</strong>
+          Reading a sentence word by word. At each word, you update your understanding. The hidden state is your running mental model of what the text means.
+        </div>
+        <div class="diagram-wrap">
+          <svg class="diagram-canvas" viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg">
+            <!-- Unrolled RNN -->
+            <defs>
+              <marker id="arr2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="#4d6490"/>
+              </marker>
+            </defs>
+            <!-- cells -->
+            <g fill="#1a2340" stroke="#00d4aa" stroke-width="1.5">
+              <rect x="40"  y="60" width="80" height="60" rx="8"/>
+              <rect x="200" y="60" width="80" height="60" rx="8"/>
+              <rect x="360" y="60" width="80" height="60" rx="8"/>
+              <rect x="520" y="60" width="60" height="60" rx="8" stroke="#4d6490" stroke-dasharray="4"/>
+            </g>
+            <g fill="#00d4aa" font-family="Space Mono,monospace" font-size="11" text-anchor="middle">
+              <text x="80"  y="96">RNN</text>
+              <text x="240" y="96">RNN</text>
+              <text x="400" y="96">RNN</text>
+            </g>
+            <!-- h arrows -->
+            <line x1="120" y1="90" x2="198" y2="90" stroke="#00d4aa" stroke-width="2" marker-end="url(#arr2)"/>
+            <line x1="280" y1="90" x2="358" y2="90" stroke="#00d4aa" stroke-width="2" marker-end="url(#arr2)"/>
+            <line x1="440" y1="90" x2="518" y2="90" stroke="#4d6490" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arr2)"/>
+            <!-- x inputs -->
+            <line x1="80"  y1="150" x2="80"  y2="122" stroke="#4f8ef7" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <line x1="240" y1="150" x2="240" y2="122" stroke="#4f8ef7" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <line x1="400" y1="150" x2="400" y2="122" stroke="#4f8ef7" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <!-- y outputs -->
+            <line x1="80"  y1="60" x2="80"  y2="38" stroke="#7c5cfc" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <line x1="240" y1="60" x2="240" y2="38" stroke="#7c5cfc" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <line x1="400" y1="60" x2="400" y2="38" stroke="#7c5cfc" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <!-- labels -->
+            <g fill="#4d6490" font-family="Space Mono,monospace" font-size="9" text-anchor="middle">
+              <text x="80"  y="165">x₁</text><text x="240" y="165">x₂</text><text x="400" y="165">x₃</text>
+              <text x="80"  y="30">y₁</text><text x="240" y="30">y₂</text><text x="400" y="30">y₃</text>
+              <text x="159" y="83">h₁</text><text x="319" y="83">h₂</text><text x="479" y="83">h₃</text>
+            </g>
+          </svg>
+          <div class="diagram-label">Unrolled RNN — same weights used at every time step, hidden state h passes forward</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block" id="block-hidden">
+      <div class="content-section">
+        <h3>The Hidden State Equation</h3>
+        <p>At each time step t, the RNN takes the current input xₜ and the previous hidden state h₍ₜ₋₁₎, combines them, and produces the new hidden state hₜ.</p>
+        <div class="formula-box">
+hₜ = tanh( Wₕ · h₍ₜ₋₁₎ + Wₓ · xₜ + b )
+yₜ = Wᵧ · hₜ + bᵧ
+        </div>
+        <div class="key-points">
+          <div class="key-point"><div class="kp-label">Wₕ</div><p>Recurrent weight matrix — how much the previous hidden state influences the current one.</p></div>
+          <div class="key-point"><div class="kp-label">Wₓ</div><p>Input weight matrix — how much the current input contributes.</p></div>
+          <div class="key-point"><div class="kp-label">Weight sharing</div><p>The same Wₕ, Wₓ are used at every time step — the network learns one set of rules that applies everywhere in the sequence.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block" id="block-bptt">
+      <div class="content-section">
+        <h3>Backpropagation Through Time (BPTT)</h3>
+        <p>Training an RNN means unrolling it across time steps and applying the chain rule backwards — from the final output all the way back to the first time step.</p>
+        <div class="formula-box">
+∂L/∂Wₕ = Σₜ ∂Lₜ/∂Wₕ
+
+Each ∂Lₜ/∂Wₕ requires multiplying gradients back through all earlier time steps.
+        </div>
+        <div class="highlight-box">
+          <strong>Why this matters</strong>
+          Gradients are multiplied at every time step. If the weight matrix has eigenvalues &lt;1, gradients shrink exponentially (vanishing). If &gt;1, they explode. Long sequences make this catastrophic.
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block" id="block-limits">
+      <div class="content-section">
+        <h3>Limitations of Vanilla RNN</h3>
+        <div class="key-points">
+          <div class="key-point"><div class="kp-label">Vanishing Gradients</div><p>Gradients shrink to zero over long sequences — the network forgets early inputs. The "long-range dependency" problem.</p></div>
+          <div class="key-point"><div class="kp-label">Exploding Gradients</div><p>Gradients grow exponentially. Fixed by gradient clipping, but it's a hack, not a solution.</p></div>
+          <div class="key-point"><div class="kp-label">Sequential</div><p>Processing is strictly left-to-right — can't be parallelised. Slow to train on long sequences.</p></div>
+          <div class="key-point"><div class="kp-label">Short Memory</div><p>In practice, vanilla RNNs struggle to connect information more than ~10 steps apart.</p></div>
+        </div>
+        <p style="margin-top:1rem">These limitations motivated the invention of <strong>LSTM</strong> — the next topic.</p>
+      </div>
+    </div>
+
+    <div class="topic-complete-bar">
+      <p>Finished reading? Mark this topic complete.</p>
+      <button class="btn-complete" id="btn-done" onclick="markDone()"><span>✓</span> Mark as Complete</button>
+    </div>
+    <div class="topic-next-nav">
+      <a class="next-card" href="cnn.html"><span class="next-label">← Previous</span><span class="next-title">CNN</span></a>
+      <a class="next-card right" href="lstm.html"><span class="next-label">Next →</span><span class="next-title">LSTM — Long Short-Term Memory</span></a>
+    </div>
+  </div>
+  <footer style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--font-mono);font-size:.72rem;border-top:1px solid var(--border)">NeuroLearn</footer>
+</div>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" id="modal-close">✕</button>
+    <h2>Sign in to save progress</h2>
+    <p>Track which topics you've completed.</p>
+    <button class="btn-google" id="btn-google-signin">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />Continue with Google
+    </button>
+  </div>
+</div>
+
+<script type="module">
+  import { initApp, currentUser, openAuthModal, showToast } from '../app.js';
+  import { db, doc, updateDoc } from '../firebase.js';
+  function showSection(id) {
+    document.querySelectorAll('.content-block').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+    document.getElementById('block-'+id)?.classList.add('active');
+    event.target.classList.add('active');
+  }
+  window.showSection = showSection;
+  async function markDone() {
+    if (!currentUser) { openAuthModal(); return; }
+    try {
+      await updateDoc(doc(db,'users',currentUser.uid),{'completed.rnn':true});
+      const btn=document.getElementById('btn-done');
+      btn.classList.add('done'); btn.innerHTML='<span>✓</span> Completed!';
+      showToast('🎉 RNN marked complete!','success');
+    } catch(e) { showToast('Error saving progress','error'); }
+  }
+  window.markDone = markDone;
+  initApp((user,profile)=>{
+    if(profile?.completed?.rnn){
+      const btn=document.getElementById('btn-done');
+      if(btn){btn.classList.add('done');btn.innerHTML='<span>✓</span> Completed!';}
+    }
+  });
+</script>
+</body>
+</html>

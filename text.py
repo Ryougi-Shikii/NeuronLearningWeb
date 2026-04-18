@@ -14,10 +14,6 @@ Progress tracker — which topics has the user completed/read?
 Streak system — come back daily, keep your streak alive (like Duolingo)
 Glossary — searchable terms (backprop, gradient, softmax, etc.)
 
-I think as i have not done much work, lets just start fresh and also above texts are all the features i want
-
-
-
 
 
 

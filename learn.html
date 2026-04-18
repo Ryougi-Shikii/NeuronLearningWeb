@@ -1,76 +1,151 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Learn | NeuroLearn</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learn — NeuroLearn</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
+<nav>
+  <a class="nav-logo" href="index.html"><span class="dot"></span> NeuroLearn</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="learn.html">Learn</a></li>
+    <li><a href="quiz.html">Daily Quiz</a></li>
+    <li><a href="leaderboard.html">Leaderboard</a></li>
+    <li><a href="glossary.html">Glossary</a></li>
+    <li><a href="profile.html">Profile</a></li>
+  </ul>
+  <div class="nav-user">
+    <span class="nav-streak" id="nav-streak" style="display:none"></span>
+    <span class="nav-points" id="nav-points" style="display:none"></span>
+    <button class="btn-nav" id="btn-signin">Sign in</button>
+    <button class="btn-nav" id="btn-signout" style="display:none">Sign out</button>
+  </div>
+</nav>
 
-<!-- NAVBAR -->
-
-<header class="navbar">
-    <div class="logo">🧠 NeuroLearn</div>
-    <nav>
-        <ul class="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="learn.html">Learn</a></li>
-            <li><a href="daily.html">Daily Quiz</a></li>
-            <li><a href="profile.html">Profile</a></li>
-        </ul>
-    </nav>
-</header>
-
-<!-- HERO -->
-
-<section class="hero">
-    <div class="hero-content">
-        <h1>Choose Your Learning Path</h1>
-        <p>Start from fundamentals and grow into real deep learning concepts step-by-step.</p>
-    </div>
-</section>
-
-<!-- COURSES -->
-
-<section class="learning-section">
-    <h2>Available Courses</h2>
-
-<div class="card-container">
-
-    <div class="card">
-        <h3>Neural Network Basics</h3>
-        <p>Neurons, perceptron, activation functions, forward propagation and backpropagation.</p>
-        <button>Start Course</button>
+<div class="page">
+  <section class="section" style="padding-top:3rem">
+    <div class="section-header">
+      <div class="section-label">Curriculum</div>
+      <h2>Choose Your Path</h2>
+      <p>Five topics in order — start from ANN and work your way to Transformer.</p>
     </div>
 
-    <div class="card">
-        <h3>Deep Learning</h3>
-        <p>Gradient descent, optimizers, vanishing gradient problem and training strategies.</p>
-        <button>Continue</button>
-    </div>
+    <!-- LEARNING PATH VISUAL -->
+    <div style="display:flex;flex-direction:column;gap:1rem;max-width:800px">
 
-    <div class="card">
-        <h3>Computer Vision</h3>
-        <p>Convolutional Neural Networks, filters, pooling layers and image classification.</p>
-        <button>Continue</button>
-    </div>
+      <a class="path-card" data-topic="ann" href="topics/ann.html" style="flex-direction:row;align-items:center;gap:1.5rem">
+        <div class="path-icon" style="flex-shrink:0">🧠</div>
+        <div style="flex:1">
+          <div class="path-tag">01 · Foundation</div>
+          <div class="path-title" style="margin:.25rem 0">Artificial Neural Networks</div>
+          <div class="path-desc">Neurons, perceptrons, weights & biases, activation functions, forward propagation, gradient descent, backpropagation.</div>
+          <div class="path-progress" style="margin-top:.75rem">
+            <div class="progress-bar"><div class="progress-fill" id="prog-ann" style="width:0%"></div></div>
+            <span class="progress-pct" id="pct-ann">Not started</span>
+          </div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:1.2rem;color:var(--text3);flex-shrink:0">→</div>
+      </a>
 
-    <div class="card">
-        <h3>Natural Language Processing</h3>
-        <p>Tokenization, embeddings, attention mechanism and transformers.</p>
-        <button>Start</button>
-    </div>
+      <div style="display:flex;justify-content:center;color:var(--text3);font-size:1.2rem">↓</div>
 
+      <a class="path-card" data-topic="cnn" href="topics/cnn.html" style="flex-direction:row;align-items:center;gap:1.5rem">
+        <div class="path-icon" style="flex-shrink:0">🖼️</div>
+        <div style="flex:1">
+          <div class="path-tag">02 · Vision</div>
+          <div class="path-title" style="margin:.25rem 0">Convolutional Neural Networks</div>
+          <div class="path-desc">Convolution operation, filters, feature maps, max pooling, stride, padding, classic architectures (LeNet, AlexNet).</div>
+          <div class="path-progress" style="margin-top:.75rem">
+            <div class="progress-bar"><div class="progress-fill" id="prog-cnn" style="width:0%"></div></div>
+            <span class="progress-pct" id="pct-cnn">Not started</span>
+          </div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:1.2rem;color:var(--text3);flex-shrink:0">→</div>
+      </a>
+
+      <div style="display:flex;justify-content:center;color:var(--text3);font-size:1.2rem">↓</div>
+
+      <a class="path-card" data-topic="rnn" href="topics/rnn.html" style="flex-direction:row;align-items:center;gap:1.5rem">
+        <div class="path-icon" style="flex-shrink:0">🔄</div>
+        <div style="flex:1">
+          <div class="path-tag">03 · Sequence</div>
+          <div class="path-title" style="margin:.25rem 0">Recurrent Neural Networks</div>
+          <div class="path-desc">Hidden state, temporal unrolling, BPTT, vanishing/exploding gradients, language modelling.</div>
+          <div class="path-progress" style="margin-top:.75rem">
+            <div class="progress-bar"><div class="progress-fill" id="prog-rnn" style="width:0%"></div></div>
+            <span class="progress-pct" id="pct-rnn">Not started</span>
+          </div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:1.2rem;color:var(--text3);flex-shrink:0">→</div>
+      </a>
+
+      <div style="display:flex;justify-content:center;color:var(--text3);font-size:1.2rem">↓</div>
+
+      <a class="path-card" data-topic="lstm" href="topics/lstm.html" style="flex-direction:row;align-items:center;gap:1.5rem">
+        <div class="path-icon" style="flex-shrink:0">🧩</div>
+        <div style="flex:1">
+          <div class="path-tag">04 · Memory</div>
+          <div class="path-title" style="margin:.25rem 0">Long Short-Term Memory</div>
+          <div class="path-desc">Forget gate, input gate, output gate, cell state highway, GRU comparison.</div>
+          <div class="path-progress" style="margin-top:.75rem">
+            <div class="progress-bar"><div class="progress-fill" id="prog-lstm" style="width:0%"></div></div>
+            <span class="progress-pct" id="pct-lstm">Not started</span>
+          </div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:1.2rem;color:var(--text3);flex-shrink:0">→</div>
+      </a>
+
+      <div style="display:flex;justify-content:center;color:var(--text3);font-size:1.2rem">↓</div>
+
+      <a class="path-card" data-topic="transformer" href="topics/transformer.html" style="flex-direction:row;align-items:center;gap:1.5rem">
+        <div class="path-icon" style="flex-shrink:0">⚡</div>
+        <div style="flex:1">
+          <div class="path-tag">05 · State of the Art</div>
+          <div class="path-title" style="margin:.25rem 0">Transformer</div>
+          <div class="path-desc">Self-attention, scaled dot-product attention, multi-head attention, positional encoding, encoder-decoder, BERT & GPT.</div>
+          <div class="path-progress" style="margin-top:.75rem">
+            <div class="progress-bar"><div class="progress-fill" id="prog-transformer" style="width:0%"></div></div>
+            <span class="progress-pct" id="pct-transformer">Not started</span>
+          </div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:1.2rem;color:var(--text3);flex-shrink:0">→</div>
+      </a>
+    </div>
+  </section>
+
+  <footer style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--font-mono);font-size:.72rem;border-top:1px solid var(--border);margin-top:2rem">
+    NeuroLearn — Learn AI Visually
+  </footer>
 </div>
 
-</section>
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" id="modal-close">✕</button>
+    <h2>Sign in to track progress</h2>
+    <p>Your topic progress is saved to your account.</p>
+    <button class="btn-google" id="btn-google-signin">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+      Continue with Google
+    </button>
+  </div>
+</div>
 
-<footer>
-    <p>© 2026 NeuroLearn | Learn AI Visually</p>
-</footer>
-
+<script type="module">
+  import { initApp } from './app.js';
+  initApp((user, profile) => {
+    if (!profile) return;
+    const topics = ['ann','cnn','rnn','lstm','transformer'];
+    topics.forEach(t => {
+      const done = profile.completed?.[t] || false;
+      const fill = document.getElementById(`prog-${t}`);
+      const label = document.getElementById(`pct-${t}`);
+      if (fill)  fill.style.width = (done ? 100 : 0) + '%';
+      if (label) label.textContent = done ? '✓ Complete' : 'Not started';
+    });
+  });
+</script>
 </body>
 </html>

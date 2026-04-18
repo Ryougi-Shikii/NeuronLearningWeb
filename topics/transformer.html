@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Transformer — NeuroLearn</title>
+  <link rel="stylesheet" href="../style.css"/>
+  <style>:root { --topic-color: var(--transformer); }</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="../index.html"><span class="dot"></span> NeuroLearn</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../learn.html">Learn</a></li>
+    <li><a href="../quiz.html">Daily Quiz</a></li>
+    <li><a href="../leaderboard.html">Leaderboard</a></li>
+    <li><a href="../glossary.html">Glossary</a></li>
+    <li><a href="../profile.html">Profile</a></li>
+  </ul>
+  <div class="nav-user">
+    <span class="nav-streak" id="nav-streak" style="display:none"></span>
+    <span class="nav-points" id="nav-points" style="display:none"></span>
+    <button class="btn-nav" id="btn-signin">Sign in</button>
+    <button class="btn-nav" id="btn-signout" style="display:none">Sign out</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="topic-header">
+    <div class="topic-breadcrumb"><a href="../learn.html">Learn</a> / <span style="color:var(--transformer)">Transformer</span></div>
+    <span class="topic-badge" style="color:var(--transformer);background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.25)">05 · State of the Art</span>
+    <h1 class="topic-h1">The Transformer</h1>
+    <p class="topic-intro">"Attention is All You Need" (Vaswani et al., 2017) introduced an architecture that replaced recurrence entirely with attention mechanisms — enabling massive parallelism and powering GPT, BERT, and every modern LLM.</p>
+    <div class="topic-nav-pills">
+      <button class="pill active" onclick="showSection('intro')">Why Transformers</button>
+      <button class="pill" onclick="showSection('attention')">Self-Attention</button>
+      <button class="pill" onclick="showSection('multihead')">Multi-Head</button>
+      <button class="pill" onclick="showSection('positional')">Positional Encoding</button>
+      <button class="pill" onclick="showSection('full')">Full Architecture</button>
+    </div>
+  </div>
+
+  <div class="topic-content">
+    <div class="content-block active" id="block-intro">
+      <div class="content-section">
+        <h3>Why Replace RNNs?</h3>
+        <p>RNNs and LSTMs are sequential — step 5 depends on step 4, which depends on step 3... You can't parallelise this. For a 1,000-word document, that's 1,000 sequential operations.</p>
+        <p>Transformers process the <em>entire sequence at once</em> using attention — every position can look at every other position in a single step. This parallelism made it feasible to train on internet-scale data.</p>
+        <div class="highlight-box">
+          <strong>The key trade-off</strong>
+          RNNs: O(n) sequential steps, O(1) memory per step. Transformers: O(1) sequential steps, O(n²) attention computation. The n² cost made large Transformers expensive — but GPUs handle parallelism far better than sequences, so Transformers win in practice.
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block" id="block-attention">
+      <div class="content-section">
+        <h3>Self-Attention — How It Works</h3>
+        <p>For each token in the sequence, self-attention computes a weighted sum of all other tokens' values. The weights (attention scores) determine how much each token should "attend to" each other token.</p>
+        <p>Each token produces three vectors from its embedding:</p>
+        <div class="key-points">
+          <div class="key-point"><div class="kp-label">Query (Q)</div><p>"What am I looking for?" — what this position wants to find in the context.</p></div>
+          <div class="key-point"><div class="kp-label">Key (K)</div><p>"What do I contain?" — what each position offers to other queries.</p></div>
+          <div class="key-point"><div class="kp-label">Value (V)</div><p>"What do I contribute?" — the actual content to be aggregated if attended to.</p></div>
+        </div>
+        <div class="formula-box">
+Attention(Q, K, V) = softmax( QKᵀ / √dₖ ) · V
+
+          QKᵀ  → similarity scores between all query-key pairs
+          / √dₖ → scale to prevent very small gradients (dₖ = key dimension)
+          softmax → turn scores into probabilities (sum to 1)
+          · V  → weighted sum of values
+        </div>
+        <div class="diagram-wrap">
+          <svg class="diagram-canvas" viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+            <!-- tokens -->
+            <g fill="#1a2340" stroke="#243560" stroke-width="1">
+              <rect x="20" y="150" width="70" height="32" rx="6"/>
+              <rect x="110" y="150" width="70" height="32" rx="6"/>
+              <rect x="200" y="150" width="70" height="32" rx="6"/>
+              <rect x="290" y="150" width="70" height="32" rx="6"/>
+              <rect x="380" y="150" width="70" height="32" rx="6"/>
+            </g>
+            <g fill="#4d6490" font-family="Space Mono,monospace" font-size="8" text-anchor="middle">
+              <text x="55"  y="170">The</text>
+              <text x="145" y="170">cat</text>
+              <text x="235" y="170">sat</text>
+              <text x="325" y="170">on</text>
+              <text x="415" y="170">mat</text>
+            </g>
+            <!-- attention arrows from "cat" to all others, varying opacity -->
+            <g stroke="#ec4899" fill="none">
+              <line x1="145" y1="150" x2="55"  y2="60" stroke-width="1" opacity="0.3"/>
+              <line x1="145" y1="150" x2="145" y2="60" stroke-width="3" opacity="1"/>
+              <line x1="145" y1="150" x2="235" y2="60" stroke-width="2" opacity="0.6"/>
+              <line x1="145" y1="150" x2="325" y2="60" stroke-width="1" opacity="0.2"/>
+              <line x1="145" y1="150" x2="415" y2="60" stroke-width="2" opacity="0.7"/>
+            </g>
+            <!-- output tokens -->
+            <g fill="#111827" stroke="#ec4899" stroke-width="1.5">
+              <rect x="20"  y="20" width="70" height="32" rx="6"/>
+              <rect x="110" y="20" width="70" height="32" rx="6"/>
+              <rect x="200" y="20" width="70" height="32" rx="6"/>
+              <rect x="290" y="20" width="70" height="32" rx="6"/>
+              <rect x="380" y="20" width="70" height="32" rx="6"/>
+            </g>
+            <g fill="#ec4899" font-family="Space Mono,monospace" font-size="8" text-anchor="middle">
+              <text x="55"  y="40">The'</text>
+              <text x="145" y="40">cat'</text>
+              <text x="235" y="40">sat'</text>
+              <text x="325" y="40">on'</text>
+              <text x="415" y="40">mat'</text>
+            </g>
+            <text x="300" y="110" fill="#4d6490" font-family="Space Mono,monospace" font-size="9" text-anchor="middle">← "cat" attends strongly to "cat" and "mat" →</text>
+          </svg>
+          <div class="diagram-label">Self-attention: "cat" attends to all tokens, weighted by relevance. Arrow thickness = attention weight.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block" id="block-multihead">
+      <div class="content-section">
+        <h3>Multi-Head Attention</h3>
+        <p>A single attention head learns one type of relationship. <strong>Multi-head attention</strong> runs h attention operations in parallel, each with its own Q, K, V projection — then concatenates the results.</p>
+        <div class="formula-box">
+MultiHead(Q,K,V) = Concat(head₁, head₂, ..., headₕ) · Wᴼ
+
+headᵢ = Attention(Q·Wᵢᴼ, K·Wᵢᴷ, V·Wᵢᵛ)
+        </div>
+        <div class="key-points">
+          <div class="key-point"><div class="kp-label">Head 1</div><p>Might attend to syntactic relationships — subject-verb agreement.</p></div>
+          <div class="key-point"><div class="kp-label">Head 2</div><p>Might attend to semantic similarity — words that mean similar things.</p></div>
+          <div class="key-point"><div class="kp-label">Head 3</div><p>Might capture positional patterns — previous/next token relationships.</p></div>
+          <div class="key-point"><div class="kp-label">Together</div><p>Each head specialises automatically during training. The concatenation captures richer representations.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block" id="block-positional">
+      <div class="content-section">
+        <h3>Positional Encoding</h3>
+        <p>Attention is <strong>permutation invariant</strong> — "cat sat on mat" and "mat on sat cat" would produce identical attention weights without positional information. We fix this by adding positional encodings to the input embeddings.</p>
+        <div class="formula-box">
+PE(pos, 2i)   = sin(pos / 10000^(2i/dmodel))
+PE(pos, 2i+1) = cos(pos / 10000^(2i/dmodel))
+        </div>
+        <p>These sinusoidal functions have a key property: PE(pos+k) can be represented as a linear function of PE(pos), so the model can learn to attend by relative position.</p>
+        <div class="highlight-box">
+          <strong>Modern alternative</strong>
+          Learned positional embeddings (used in BERT, GPT) work equally well. Rotary Position Embedding (RoPE, used in LLaMA) encodes relative positions directly into the Q and K vectors — enabling better length generalisation.
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block" id="block-full">
+      <div class="content-section">
+        <h3>The Full Architecture</h3>
+        <p>The original Transformer has an <strong>encoder</strong> (understands input) and a <strong>decoder</strong> (generates output). Models like BERT use only the encoder; GPT uses only the decoder.</p>
+        <div class="formula-box">
+ENCODER BLOCK (×N):
+  x → LayerNorm → MultiHead Self-Attention → residual +
+    → LayerNorm → Feed-Forward Network → residual +
+
+DECODER BLOCK (×N):
+  y → LayerNorm → Masked Self-Attention → residual +
+    → LayerNorm → Cross-Attention (attends to encoder) → residual +
+    → LayerNorm → Feed-Forward Network → residual +
+        </div>
+        <div class="key-points">
+          <div class="key-point"><div class="kp-label">Residual Connections</div><p>Skip connections (from ResNet) add the input back to the output of each sublayer — preventing vanishing gradients in deep stacks.</p></div>
+          <div class="key-point"><div class="kp-label">Layer Norm</div><p>Normalises activations within each layer — stabilises training of very deep Transformers.</p></div>
+          <div class="key-point"><div class="kp-label">Feed-Forward</div><p>Two linear layers with ReLU in between, applied independently per position. Expands and contracts dimension: dmodel → 4·dmodel → dmodel.</p></div>
+          <div class="key-point"><div class="kp-label">BERT / GPT</div><p>BERT = encoder-only, bidirectional — great for classification. GPT = decoder-only, left-to-right — great for generation.</p></div>
+        </div>
+      </div>
+      <div class="content-section">
+        <h3>Why Transformers Dominate</h3>
+        <p>They parallelise perfectly on GPUs, scale predictably with data and parameters (scaling laws), and attention can model any kind of relationship regardless of distance. Every state-of-the-art model in NLP, vision (ViT), audio (Whisper), and protein folding (AlphaFold) is a Transformer.</p>
+      </div>
+    </div>
+
+    <div class="topic-complete-bar">
+      <p>🎉 You've reached the final topic! Mark it complete to finish the curriculum.</p>
+      <button class="btn-complete" id="btn-done" onclick="markDone()"><span>✓</span> Mark as Complete</button>
+    </div>
+    <div class="topic-next-nav">
+      <a class="next-card" href="lstm.html"><span class="next-label">← Previous</span><span class="next-title">LSTM</span></a>
+      <a class="next-card right" href="../quiz.html"><span class="next-label">Test yourself →</span><span class="next-title">Daily Quiz</span></a>
+    </div>
+  </div>
+  <footer style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--font-mono);font-size:.72rem;border-top:1px solid var(--border)">NeuroLearn</footer>
+</div>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" id="modal-close">✕</button>
+    <h2>Sign in to save progress</h2>
+    <p>Track which topics you've completed.</p>
+    <button class="btn-google" id="btn-google-signin">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"/>Continue with Google
+    </button>
+  </div>
+</div>
+
+<script type="module">
+  import { initApp, currentUser, openAuthModal, showToast } from '../app.js';
+  import { db, doc, updateDoc } from '../firebase.js';
+  function showSection(id) {
+    document.querySelectorAll('.content-block').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+    document.getElementById('block-'+id)?.classList.add('active');
+    event.target.classList.add('active');
+  }
+  window.showSection = showSection;
+  async function markDone() {
+    if (!currentUser) { openAuthModal(); return; }
+    try {
+      await updateDoc(doc(db,'users',currentUser.uid),{'completed.transformer':true});
+      const btn=document.getElementById('btn-done');
+      btn.classList.add('done'); btn.innerHTML='<span>✓</span> Completed!';
+      showToast('🎉 Curriculum complete! You are a neural network master.','success');
+    } catch(e) { showToast('Error saving progress','error'); }
+  }
+  window.markDone = markDone;
+  initApp((user,profile)=>{
+    if(profile?.completed?.transformer){
+      const btn=document.getElementById('btn-done');
+      if(btn){btn.classList.add('done');btn.innerHTML='<span>✓</span> Completed!';}
+    }
+  });
+</script>
+</body>
+</html>

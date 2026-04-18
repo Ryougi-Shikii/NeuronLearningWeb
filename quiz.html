@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Quiz — NeuroLearn</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html"><span class="dot"></span> NeuroLearn</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="learn.html">Learn</a></li>
+    <li><a href="quiz.html">Daily Quiz</a></li>
+    <li><a href="leaderboard.html">Leaderboard</a></li>
+    <li><a href="glossary.html">Glossary</a></li>
+    <li><a href="profile.html">Profile</a></li>
+  </ul>
+  <div class="nav-user">
+    <span class="nav-streak" id="nav-streak" style="display:none"></span>
+    <span class="nav-points" id="nav-points" style="display:none"></span>
+    <button class="btn-nav" id="btn-signin">Sign in</button>
+    <button class="btn-nav" id="btn-signout" style="display:none">Sign out</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="quiz-layout" style="padding-top:2.5rem">
+    <div class="quiz-header">
+      <div>
+        <div style="font-family:var(--font-display);font-weight:700;font-size:1.4rem">Daily Quiz</div>
+        <div class="quiz-date" id="quiz-date"></div>
+      </div>
+      <div class="quiz-progress-dots" id="progress-dots"></div>
+    </div>
+
+    <!-- LOGIN PROMPT -->
+    <div id="login-prompt" style="display:none" class="quiz-card" style="text-align:center">
+      <div style="font-size:2rem;margin-bottom:1rem">🔒</div>
+      <div style="font-family:var(--font-display);font-weight:700;font-size:1.2rem;margin-bottom:.5rem">Sign in to take the quiz</div>
+      <div style="color:var(--text2);font-size:.9rem;margin-bottom:1.5rem">Your points and streak are saved to your account.</div>
+      <button class="btn btn-primary" id="quiz-signin-btn">Sign in with Google</button>
+    </div>
+
+    <!-- LOADING -->
+    <div id="quiz-loading" class="quiz-card" style="text-align:center;padding:3rem">
+      <div class="loading-spinner"></div>
+      <div style="margin-top:1rem;color:var(--text3);font-family:var(--font-mono);font-size:.8rem">Loading today's questions...</div>
+    </div>
+
+    <!-- QUIZ LOCKED (already done today) -->
+    <div class="quiz-locked" id="quiz-locked">
+      <div class="lock-icon">✅</div>
+      <h3>Quiz Complete!</h3>
+      <p>You've finished today's quiz. New questions unlock in:</p>
+      <div class="countdown-timer" id="countdown">--:--:--</div>
+      <p style="margin-top:1rem">Come back tomorrow to keep your streak alive 🔥</p>
+      <a class="btn btn-secondary" href="leaderboard.html" style="display:inline-flex;margin-top:1.5rem">View Leaderboard →</a>
+    </div>
+
+    <!-- ACTIVE QUIZ -->
+    <div id="quiz-active" style="display:none">
+      <div class="quiz-card" id="question-card">
+        <div class="quiz-q-num" id="q-num">Question 1 of 5</div>
+        <div class="quiz-question" id="q-text"></div>
+        <div class="quiz-options" id="q-options"></div>
+        <div class="quiz-explanation" id="q-explanation"></div>
+        <div class="quiz-actions">
+          <button class="btn btn-primary" id="btn-next" style="display:none" onclick="nextQuestion()">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCORE CARD -->
+    <div class="score-card" id="score-card">
+      <div class="score-circle">
+        <div class="score-num" id="sc-num">0</div>
+        <div class="score-denom" id="sc-denom">/ 5</div>
+      </div>
+      <div class="score-pts" id="sc-pts">+0 points earned</div>
+      <h3 id="sc-title"></h3>
+      <p id="sc-msg"></p>
+      <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap">
+        <a class="btn btn-secondary" href="learn.html">Keep Learning</a>
+        <a class="btn btn-primary" href="leaderboard.html">Leaderboard →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" id="modal-close">✕</button>
+    <h2>Sign in to continue</h2>
+    <p>Your quiz points and streak are saved with your account.</p>
+    <button class="btn-google" id="btn-google-signin">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"/>Continue with Google
+    </button>
+  </div>
+</div>
+
+<script type="module">
+import { initApp, currentUser, openAuthModal, showToast } from './app.js';
+import { db, doc, getDoc, updateDoc, increment, serverTimestamp } from './firebase.js';
+
+// ── QUESTION BANK ─────────────────────────────────────────────────
+// In production, store these in Firestore keyed by date (YYYY-MM-DD).
+// We cycle through them by using (dayOfYear % pools.length) as index.
+const QUESTION_POOLS = [
+  [ // Pool 0
+    { q:"Which activation function outputs values strictly in (0,1)?", opts:["ReLU","Sigmoid","Tanh","Softmax"], ans:1, exp:"Sigmoid squashes any input to the range (0,1) using σ(x) = 1/(1+e⁻ˣ). Softmax also outputs (0,1) but only over a vector, not element-wise." },
+    { q:"What does backpropagation compute?", opts:["Forward pass activations","Gradients of the loss w.r.t. weights","Number of parameters","Attention scores"], ans:1, exp:"Backpropagation applies the chain rule to compute ∂L/∂W for every weight in the network, enabling gradient descent updates." },
+    { q:"In a CNN, what does a filter learn to detect?", opts:["The full image class","A local spatial pattern (edge, texture, etc.)","The global average","Positional encoding"], ans:1, exp:"Each CNN filter is a small learned matrix that detects a specific local pattern — early filters detect edges, later filters detect complex shapes." },
+    { q:"What is the vanishing gradient problem?", opts:["Gradients become too large","Gradients shrink to near-zero in early layers","The loss function is not convex","Weights become negative"], ans:1, exp:"In deep networks (and long RNN sequences), gradients are multiplied through many layers. If each factor <1, the product approaches zero — early layers stop learning." },
+    { q:"Which problem did LSTM specifically solve compared to vanilla RNN?", opts:["Overfitting","Vanishing gradients over long sequences","Slow inference","Lack of parallelism"], ans:1, exp:"The LSTM cell state provides a gradient highway — additive updates mean gradients can flow across hundreds of time steps without vanishing." },
+  ],
+  [ // Pool 1
+    { q:"What is the purpose of max pooling in a CNN?", opts:["Increase feature map size","Add non-linearity","Reduce spatial dimensions and provide translation invariance","Compute attention scores"], ans:2, exp:"Max pooling takes the maximum value in each window, reducing spatial size and providing robustness to small translations of features." },
+    { q:"In an LSTM, which gate controls what to erase from cell state?", opts:["Input gate","Output gate","Forget gate","Candidate gate"], ans:2, exp:"The forget gate fₜ = σ(Wf·[h,x]+b) outputs values in (0,1). Near 0 = erase; near 1 = keep. It controls which old information to discard." },
+    { q:"What does the Query vector represent in self-attention?", opts:["What this position contributes if attended to","What this position is looking for","The final output","The positional offset"], ans:1, exp:"Q = 'what am I looking for?', K = 'what do I offer?', V = 'what do I contribute if you attend to me?'" },
+    { q:"Which formula gives the scaled dot-product attention score?", opts:["softmax(QK) · V","softmax(QKᵀ/√dₖ) · V","sigmoid(QV) + K","tanh(QK) · V"], ans:1, exp:"Dividing by √dₖ prevents dot products from growing large in high dimensions, which would push softmax into saturation and kill gradients." },
+    { q:"What is the role of the residual connection in a Transformer?", opts:["Compute attention","Add positional info","Allow gradients to bypass sublayers and prevent vanishing","Reduce parameters"], ans:2, exp:"Residual (skip) connections add the input to the sublayer's output: x → x + sublayer(x). This gives gradients a direct path backwards, enabling very deep stacks." },
+  ],
+  [ // Pool 2
+    { q:"What is the Universal Approximation Theorem?", opts:["Any data can be memorized","A neural network with one hidden layer can approximate any continuous function","Deeper is always better","Loss always decreases with more data"], ans:1, exp:"Given sufficient neurons, a single hidden-layer network can approximate any continuous function on a compact domain. This is the theoretical foundation for using neural networks as general function approximators." },
+    { q:"In RNNs, what is weight sharing?", opts:["Different weights for each time step","The same weights used at every time step","Weights shared between Q and K","Weights initialised to the same value"], ans:1, exp:"An RNN uses the same Wₕ and Wₓ at every time step. This is what makes it parameter-efficient for arbitrary-length sequences." },
+    { q:"GRU vs LSTM — what does GRU remove?", opts:["The hidden state","The cell state and merges it with hidden state","The output gate","The recurrent connection"], ans:1, exp:"GRU merges the cell state and hidden state, and uses only a reset gate and update gate instead of forget/input/output gates. Fewer parameters, similar performance on many tasks." },
+    { q:"What type of padding preserves input spatial dimensions in a CNN?", opts:["Valid padding","Same padding","Zero stride","Dilated padding"], ans:1, exp:"'Same' padding adds zeros around the image border so the output feature map has the same height/width as the input." },
+    { q:"What does softmax do to a vector of logits?", opts:["Clips values to (0,1)","Normalises to a probability distribution summing to 1","Applies ReLU element-wise","Computes the mean"], ans:1, exp:"softmax(xᵢ) = e^xᵢ / Σⱼ e^xⱼ. Every output is in (0,1) and they sum to exactly 1, making it interpretable as a probability distribution over classes." },
+  ],
+  [ // Pool 3
+    { q:"What is the key architectural innovation of ResNet?", opts:["Wider layers","Skip (residual) connections","Larger filters","No activation functions"], ans:1, exp:"ResNet introduced skip connections: y = F(x) + x. This lets the network learn residual mappings rather than full transformations, enabling training of 100+ layer networks." },
+    { q:"In multi-head attention, what does each head learn?", opts:["The same relationship as all others","A different type of relationship or pattern","One word's meaning","A positional offset"], ans:1, exp:"Each head has its own Q, K, V projections, so they can specialise in different relationships: one might focus on syntax, another on semantic similarity." },
+    { q:"What problem does positional encoding solve in Transformers?", opts:["Vanishing gradients","Attention is permutation-invariant — it has no notion of order","Overfitting","Slow training"], ans:1, exp:"Without positional encoding, 'cat sat on mat' and 'mat on sat cat' produce identical attention — the Transformer has no way to distinguish token order." },
+    { q:"Which of these is an encoder-only Transformer model?", opts:["GPT-3","LLaMA","BERT","T5 decoder"], ans:2, exp:"BERT (Bidirectional Encoder Representations from Transformers) uses only the encoder stack with bidirectional attention — ideal for classification and understanding tasks." },
+    { q:"What is gradient clipping used for in RNN training?", opts:["Prevent vanishing gradients","Prevent exploding gradients","Speed up forward pass","Reduce memory"], ans:1, exp:"Gradient clipping caps the gradient norm to a threshold before the weight update, preventing the exploding gradient problem that commonly occurs when training RNNs on long sequences." },
+  ],
+  [ // Pool 4
+    { q:"What is a feature map in a CNN?", opts:["The final class label","The output of applying one filter across the entire input","A lookup table of pixel values","The pooled output"], ans:1, exp:"When one filter (e.g. an edge detector) slides across an input, its output at each position forms a 2D feature map — a spatial activation of that filter's pattern." },
+    { q:"Which operation does the LSTM input gate control?", opts:["What to erase from cell state","What new information to write to cell state","What to expose as hidden state","The recurrent connection weight"], ans:1, exp:"iₜ = σ(Wi·[h,x]+bi) is multiplied element-wise with the candidate C̃ₜ = tanh(...). It gates how much new candidate information is actually written to the cell state." },
+    { q:"In the Transformer, what is the Feed-Forward Network's role?", opts:["Attend to different positions","Apply a per-position transformation that adds representational capacity","Compute positional encodings","Project to output vocabulary"], ans:1, exp:"The FFN is applied independently to each position: x → ReLU(xW₁+b₁)W₂+b₂, expanding to 4×dmodel and contracting back. It adds capacity beyond what attention captures." },
+    { q:"What does 'stride' control in a convolutional layer?", opts:["Filter size","Step size of the sliding filter","Number of filters","Padding amount"], ans:1, exp:"Stride = how many pixels the filter moves each step. Stride=1 → dense output; stride=2 → output dimensions halved. It's an alternative to pooling for downsampling." },
+    { q:"What makes tanh preferable to sigmoid for hidden layer activations?", opts:["Tanh is faster to compute","Tanh is zero-centred, reducing zig-zag gradient updates","Tanh avoids vanishing gradients","Tanh outputs in (0,1)"], ans:1, exp:"Sigmoid outputs (0,1) — always positive, making gradients consistently one-signed and causing zig-zag updates. Tanh outputs (−1,1) — zero-centred, allowing more balanced gradient steps." },
+  ],
+];
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function todayStr() {
+  return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+}
+
+function dayIndex() {
+  const start = new Date('2024-01-01');
+  const diff  = Math.floor((new Date() - start) / 86400000);
+  return diff % QUESTION_POOLS.length;
+}
+
+function formatCountdown() {
+  const now  = new Date();
+  const next = new Date(now);
+  next.setUTCHours(24,0,0,0);
+  const secs = Math.floor((next - now) / 1000);
+  const h = String(Math.floor(secs/3600)).padStart(2,'0');
+  const m = String(Math.floor((secs%3600)/60)).padStart(2,'0');
+  const s = String(secs%60).padStart(2,'0');
+  return `${h}:${m}:${s}`;
+}
+
+// ── STATE ─────────────────────────────────────────────────────────
+let questions   = [];
+let currentQ    = 0;
+let score       = 0;
+let answered    = false;
+
+// ── RENDER ────────────────────────────────────────────────────────
+function renderQuestion() {
+  const q   = questions[currentQ];
+  const num = document.getElementById('q-num');
+  const txt = document.getElementById('q-text');
+  const opts = document.getElementById('q-options');
+  const exp  = document.getElementById('q-explanation');
+  const btn  = document.getElementById('btn-next');
+
+  num.textContent = `Question ${currentQ+1} of ${questions.length}`;
+  txt.textContent = q.q;
+  opts.innerHTML  = '';
+  exp.className   = 'quiz-explanation';
+  exp.textContent = '';
+  btn.style.display = 'none';
+  answered = false;
+
+  const letters = ['A','B','C','D'];
+  q.opts.forEach((o,i) => {
+    const el = document.createElement('div');
+    el.className = 'quiz-option';
+    el.innerHTML = `<span class="option-letter">${letters[i]}</span>${o}`;
+    el.onclick = () => selectAnswer(i, q.ans, q.exp);
+    opts.appendChild(el);
+  });
+
+  // update dots
+  document.querySelectorAll('.qdot').forEach((d,i) => {
+    d.classList.remove('done','current');
+    if (i < currentQ) d.classList.add('done');
+    else if (i === currentQ) d.classList.add('current');
+  });
+}
+
+function selectAnswer(chosen, correct, explanation) {
+  if (answered) return;
+  answered = true;
+  const opts = document.querySelectorAll('.quiz-option');
+  opts.forEach((o,i) => {
+    if (i === correct) o.classList.add('correct');
+    else if (i === chosen) o.classList.add('wrong');
+  });
+  if (chosen === correct) score++;
+  const exp = document.getElementById('q-explanation');
+  exp.textContent = explanation;
+  exp.classList.add('show');
+  document.getElementById('btn-next').style.display = 'flex';
+}
+
+window.nextQuestion = function() {
+  currentQ++;
+  if (currentQ < questions.length) {
+    renderQuestion();
+  } else {
+    finishQuiz();
+  }
+};
+
+async function finishQuiz() {
+  document.getElementById('quiz-active').style.display = 'none';
+
+  const pts = score * 10;
+  const sc  = document.getElementById('score-card');
+  document.getElementById('sc-num').textContent = score;
+  document.getElementById('sc-denom').textContent = `/ ${questions.length}`;
+  document.getElementById('sc-pts').textContent = `+${pts} points earned`;
+
+  const pct = score / questions.length;
+  document.getElementById('sc-title').textContent =
+    pct === 1 ? 'Perfect Score! 🎉' : pct >= 0.6 ? 'Great Work! 💪' : 'Keep Practising!';
+  document.getElementById('sc-msg').textContent =
+    pct === 1 ? 'Full marks — exceptional.' : pct >= 0.6 ? 'Solid performance. Review any you missed.' : 'Go through the learning material and try again tomorrow.';
+
+  sc.classList.add('show');
+
+  if (currentUser) {
+    try {
+      const today = todayStr();
+      const ref   = doc(db, 'users', currentUser.uid);
+      const snap  = await getDoc(ref);
+      const data  = snap.data();
+
+      const lastDate = data.lastQuizDate || '';
+      const yest     = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const newStreak = (lastDate === yest || lastDate === today)
+        ? (data.streak || 0) + (lastDate === today ? 0 : 1)
+        : 1;
+
+      await updateDoc(ref, {
+        points:       increment(pts),
+        streak:       newStreak,
+        lastQuizDate: today,
+        [`quizDone.${today}`]: { score, pts, ts: new Date() }
+      });
+
+      showToast(`+${pts} points added! 🔥 Streak: ${newStreak}`, 'success');
+    } catch(e) {
+      console.error(e);
+    }
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+function buildDots(n) {
+  const wrap = document.getElementById('progress-dots');
+  wrap.innerHTML = '';
+  for (let i=0; i<n; i++) {
+    const d = document.createElement('div');
+    d.className = 'qdot' + (i===0?' current':'');
+    wrap.appendChild(d);
+  }
+}
+
+function startQuiz() {
+  questions = QUESTION_POOLS[dayIndex()];
+  currentQ  = 0;
+  score     = 0;
+  document.getElementById('quiz-loading').style.display = 'none';
+  document.getElementById('quiz-active').style.display = 'block';
+  buildDots(questions.length);
+  renderQuestion();
+}
+
+async function checkQuizStatus(user) {
+  document.getElementById('quiz-loading').style.display = 'block';
+  if (!user) {
+    document.getElementById('quiz-loading').style.display = 'none';
+    document.getElementById('login-prompt').style.display = 'block';
+    return;
+  }
+
+  try {
+    const snap  = await getDoc(doc(db, 'users', user.uid));
+    const data  = snap.data() || {};
+    const today = todayStr();
+
+    if (data.quizDone?.[today]) {
+      // Already done
+      document.getElementById('quiz-loading').style.display = 'none';
+      document.getElementById('quiz-locked').classList.add('show');
+      // Countdown
+      const tick = () => { document.getElementById('countdown').textContent = formatCountdown(); };
+      tick(); setInterval(tick, 1000);
+    } else {
+      startQuiz();
+    }
+  } catch(e) {
+    console.error(e);
+    startQuiz(); // fallback
+  }
+}
+
+// Set date label
+document.getElementById('quiz-date').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+document.getElementById('quiz-signin-btn')?.addEventListener('click', openAuthModal);
+
+initApp((user, profile) => {
+  checkQuizStatus(user);
+});
+</script>
+</body>
+</html>

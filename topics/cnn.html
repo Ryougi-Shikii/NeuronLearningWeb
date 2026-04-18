@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CNN — NeuroLearn</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>:root { --topic-color: var(--cnn); }</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="../index.html"><span class="dot"></span> NeuroLearn</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../learn.html">Learn</a></li>
+    <li><a href="../quiz.html">Daily Quiz</a></li>
+    <li><a href="../leaderboard.html">Leaderboard</a></li>
+    <li><a href="../glossary.html">Glossary</a></li>
+    <li><a href="../profile.html">Profile</a></li>
+  </ul>
+  <div class="nav-user">
+    <span class="nav-streak" id="nav-streak" style="display:none"></span>
+    <span class="nav-points" id="nav-points" style="display:none"></span>
+    <button class="btn-nav" id="btn-signin">Sign in</button>
+    <button class="btn-nav" id="btn-signout" style="display:none">Sign out</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="topic-header">
+    <div class="topic-breadcrumb"><a href="../learn.html">Learn</a> / <span style="color:var(--cnn)">CNN</span></div>
+    <span class="topic-badge" style="color:var(--cnn);background:rgba(124,92,252,0.1);border:1px solid rgba(124,92,252,0.25)">02 · Vision</span>
+    <h1 class="topic-h1">Convolutional<br>Neural Networks</h1>
+    <p class="topic-intro">CNNs revolutionized computer vision by learning spatial hierarchies of features directly from images — no hand-crafted feature engineering needed.</p>
+    <div class="topic-nav-pills">
+      <button class="pill active" onclick="showSection('intro')">Introduction</button>
+      <button class="pill" onclick="showSection('conv')">Convolution</button>
+      <button class="pill" onclick="showSection('pooling')">Pooling</button>
+      <button class="pill" onclick="showSection('arch')">Architectures</button>
+    </div>
+  </div>
+
+  <div class="topic-content">
+    <div class="content-block active" id="block-intro">
+      <div class="content-section">
+        <h3>Why Not Just Use ANN?</h3>
+        <p>A 224×224 RGB image has 150,528 inputs. Connecting those fully to even a modest hidden layer means millions of parameters — expensive, and it ignores spatial structure. A pixel's neighbours matter; far-away pixels usually don't.</p>
+        <p>CNNs exploit <strong>translation invariance</strong>: a cat in the top-left and a cat in the bottom-right should activate the same detector. They do this with <strong>shared weights</strong> via convolution.</p>
+        <div class="highlight-box">
+          <strong>Key insight</strong>
+          Instead of one weight per connection, CNNs use a small filter (kernel) that slides across the entire image — the same weights used everywhere. This massively reduces parameters while preserving spatial relationships.
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block" id="block-conv">
+      <div class="content-section">
+        <h3>The Convolution Operation</h3>
+        <p>A <strong>filter</strong> (kernel) is a small matrix of learnable weights (e.g. 3×3). It slides across the input image computing a dot product at each position, producing a <strong>feature map</strong>.</p>
+        <div class="formula-box">
+Feature map(i,j) = Σ Σ Input(i+m, j+n) · Filter(m,n)
+                   m n
+        </div>
+        <div class="key-points">
+          <div class="key-point"><div class="kp-label">Filter / Kernel</div><p>Small learnable weight matrix. Different filters detect different features: edges, curves, textures.</p></div>
+          <div class="key-point"><div class="kp-label">Feature Map</div><p>Output of applying one filter across the full input. Highlights where that filter's pattern appears.</p></div>
+          <div class="key-point"><div class="kp-label">Stride</div><p>Step size of the sliding filter. Stride=2 halves the output dimensions.</p></div>
+          <div class="key-point"><div class="kp-label">Padding</div><p>'Same' padding adds zeros around the border so output matches input size. 'Valid' = no padding.</p></div>
+        </div>
+        <div class="diagram-wrap">
+          <svg class="diagram-canvas" viewBox="0 0 580 200" xmlns="http://www.w3.org/2000/svg">
+            <!-- Input grid 5x5 -->
+            <g fill="#1a2340" stroke="#243560" stroke-width="1">
+              <rect x="20" y="20" width="200" height="160"/>
+              <!-- grid lines -->
+              <line x1="60"  y1="20" x2="60"  y2="180"/><line x1="100" y1="20" x2="100" y2="180"/>
+              <line x1="140" y1="20" x2="140" y2="180"/><line x1="180" y1="20" x2="180" y2="180"/>
+              <line x1="20" y1="52"  x2="220" y2="52"/> <line x1="20" y1="84"  x2="220" y2="84"/>
+              <line x1="20" y1="116" x2="220" y2="116"/><line x1="20" y1="148" x2="220" y2="148"/>
+            </g>
+            <!-- highlight 3x3 kernel area -->
+            <rect x="20" y="20" width="120" height="96" fill="rgba(124,92,252,0.15)" stroke="#7c5cfc" stroke-width="2" rx="2"/>
+            <!-- filter 3x3 -->
+            <g fill="#111827" stroke="#7c5cfc" stroke-width="1.5">
+              <rect x="270" y="40" width="80" height="80" rx="4"/>
+              <line x1="297" y1="40" x2="297" y2="120"/><line x1="324" y1="40" x2="324" y2="120"/>
+              <line x1="270" y1="67" x2="350" y2="67"/><line x1="270" y1="94" x2="350" y2="94"/>
+            </g>
+            <!-- arrow -->
+            <line x1="355" y1="80" x2="400" y2="80" stroke="#4d6490" stroke-width="1.5" marker-end="url(#arr)"/>
+            <!-- feature map -->
+            <g fill="#1a2340" stroke="#00d4aa" stroke-width="1.5">
+              <rect x="410" y="40" width="140" height="112" rx="4"/>
+              <line x1="445" y1="40" x2="445" y2="152"/><line x1="480" y1="40" x2="480" y2="152"/>
+              <line x1="515" y1="40" x2="515" y2="152"/>
+              <line x1="410" y1="76"  x2="550" y2="76"/> <line x1="410" y1="112" x2="550" y2="112"/>
+            </g>
+            <defs>
+              <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="#4d6490"/>
+              </marker>
+            </defs>
+            <g fill="#4d6490" font-family="Space Mono,monospace" font-size="9" text-anchor="middle">
+              <text x="120" y="196">Input (5×5)</text>
+              <text x="310" y="136">Filter (3×3)</text>
+              <text x="480" y="170">Feature Map (3×3)</text>
+            </g>
+            <text x="310" y="83" fill="#7c5cfc" font-family="Space Mono,monospace" font-size="8" text-anchor="middle">learnable</text>
+          </svg>
+          <div class="diagram-label">A 3×3 filter slides over a 5×5 input producing a 3×3 feature map (stride=1, no padding)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block" id="block-pooling">
+      <div class="content-section">
+        <h3>Pooling Layers</h3>
+        <p>Pooling reduces the spatial dimensions of feature maps, making the network more computationally efficient and providing some translation invariance.</p>
+        <div class="key-points">
+          <div class="key-point"><div class="kp-label">Max Pooling</div><p>Takes the maximum value in each window (e.g. 2×2). Preserves the strongest activations. Most common.</p></div>
+          <div class="key-point"><div class="kp-label">Average Pooling</div><p>Takes the average. Preserves overall information better, used in some architectures (e.g. GoogLeNet).</p></div>
+          <div class="key-point"><div class="kp-label">Global Average Pooling</div><p>Collapses each entire feature map to a single number. Used just before the output layer in modern CNNs.</p></div>
+        </div>
+        <div class="highlight-box">
+          <strong>Why max pooling works</strong>
+          If a feature detector fires somewhere in a region, we care that it fired — not exactly where. Max pooling captures the "was it there?" question, giving robustness to small translations.
+        </div>
+      </div>
+      <div class="content-section">
+        <h3>Full CNN Pipeline</h3>
+        <p>A typical CNN stacks these operations in order:</p>
+        <div class="formula-box">
+Input Image
+  → [Conv → ReLU] × N      (feature extraction)
+  → MaxPool                 (downsampling)
+  → [Conv → ReLU] × N      (deeper features)
+  → MaxPool
+  → Flatten
+  → Fully Connected Layers  (classification)
+  → Softmax Output
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block" id="block-arch">
+      <div class="content-section">
+        <h3>Famous Architectures</h3>
+        <div class="key-points">
+          <div class="key-point"><div class="kp-label">LeNet-5 (1998)</div><p>First practical CNN by LeCun. Digit recognition on MNIST. Proved CNNs could learn from images end-to-end.</p></div>
+          <div class="key-point"><div class="kp-label">AlexNet (2012)</div><p>Won ImageNet by a huge margin. Introduced ReLU, dropout, and GPU training. Sparked the deep learning revolution.</p></div>
+          <div class="key-point"><div class="kp-label">VGGNet (2014)</div><p>Used only 3×3 filters throughout. Showed depth matters. Simple, elegant, still used as a backbone.</p></div>
+          <div class="key-point"><div class="kp-label">ResNet (2015)</div><p>Introduced skip connections (residual blocks). Enabled training of 100+ layer networks by solving vanishing gradients.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-complete-bar">
+      <p>Finished reading? Mark this topic complete.</p>
+      <button class="btn-complete" id="btn-done" onclick="markDone()"><span>✓</span> Mark as Complete</button>
+    </div>
+    <div class="topic-next-nav">
+      <a class="next-card" href="ann.html"><span class="next-label">← Previous</span><span class="next-title">ANN</span></a>
+      <a class="next-card right" href="rnn.html"><span class="next-label">Next →</span><span class="next-title">RNN — Recurrent Neural Networks</span></a>
+    </div>
+  </div>
+
+  <footer style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--font-mono);font-size:.72rem;border-top:1px solid var(--border)">NeuroLearn</footer>
+</div>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" id="modal-close">✕</button>
+    <h2>Sign in to save progress</h2>
+    <p>Track which topics you've completed.</p>
+    <button class="btn-google" id="btn-google-signin">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+      Continue with Google
+    </button>
+  </div>
+</div>
+
+<script type="module">
+  import { initApp, currentUser, openAuthModal, showToast } from '../app.js';
+  import { db, doc, updateDoc } from '../firebase.js';
+  function showSection(id) {
+    document.querySelectorAll('.content-block').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    document.getElementById('block-' + id)?.classList.add('active');
+    event.target.classList.add('active');
+  }
+  window.showSection = showSection;
+  async function markDone() {
+    if (!currentUser) { openAuthModal(); return; }
+    try {
+      await updateDoc(doc(db, 'users', currentUser.uid), { 'completed.cnn': true });
+      const btn = document.getElementById('btn-done');
+      btn.classList.add('done'); btn.innerHTML = '<span>✓</span> Completed!';
+      showToast('🎉 CNN marked complete!', 'success');
+    } catch(e) { showToast('Error saving progress', 'error'); }
+  }
+  window.markDone = markDone;
+  initApp((user, profile) => {
+    if (profile?.completed?.cnn) {
+      const btn = document.getElementById('btn-done');
+      if (btn) { btn.classList.add('done'); btn.innerHTML = '<span>✓</span> Completed!'; }
+    }
+  });
+</script>
+</body>
+</html>

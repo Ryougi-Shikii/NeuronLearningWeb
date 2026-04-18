@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANN — NeuroLearn</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    :root { --topic-color: var(--ann); }
+    .path-card[data-topic="ann"]::after { opacity: 1; }
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="../index.html"><span class="dot"></span> NeuroLearn</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../learn.html">Learn</a></li>
+    <li><a href="../quiz.html">Daily Quiz</a></li>
+    <li><a href="../leaderboard.html">Leaderboard</a></li>
+    <li><a href="../glossary.html">Glossary</a></li>
+    <li><a href="../profile.html">Profile</a></li>
+  </ul>
+  <div class="nav-user">
+    <span class="nav-streak" id="nav-streak" style="display:none"></span>
+    <span class="nav-points" id="nav-points" style="display:none"></span>
+    <button class="btn-nav" id="btn-signin">Sign in</button>
+    <button class="btn-nav" id="btn-signout" style="display:none">Sign out</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="topic-header">
+    <div class="topic-breadcrumb">
+      <a href="../learn.html">Learn</a> / <span style="color:var(--ann)">ANN</span>
+    </div>
+    <span class="topic-badge" style="color:var(--ann);background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.25)">01 · Foundation</span>
+    <h1 class="topic-h1">Artificial Neural<br>Networks</h1>
+    <p class="topic-intro">The building block of all deep learning. Understand how a network of simple mathematical units can learn any function — and why that's remarkable.</p>
+    <div class="topic-nav-pills">
+      <button class="pill active" onclick="showSection('intro')">Introduction</button>
+      <button class="pill" onclick="showSection('neuron')">The Neuron</button>
+      <button class="pill" onclick="showSection('forward')">Forward Pass</button>
+      <button class="pill" onclick="showSection('backprop')">Backpropagation</button>
+      <button class="pill" onclick="showSection('activations')">Activations</button>
+    </div>
+  </div>
+
+  <div class="topic-content">
+
+    <!-- INTRO -->
+    <div class="content-block active" id="block-intro">
+      <div class="content-section">
+        <h3>What is an Artificial Neural Network?</h3>
+        <p>An ANN is a computational model inspired by the biological brain. It consists of layers of interconnected nodes (neurons) that transform input data into output predictions by learning patterns from examples.</p>
+        <p>The key insight is this: any function can be approximated by a sufficiently large neural network. This is called the <strong>Universal Approximation Theorem</strong>.</p>
+        <div class="highlight-box">
+          <strong>Core idea</strong>
+          A neural network is just a chain of matrix multiplications followed by non-linear functions. Training it means adjusting the numbers in those matrices until the output matches what we want.
+        </div>
+      </div>
+      <div class="content-section">
+        <h3>Architecture Overview</h3>
+        <p>Every ANN has at least three kinds of layers:</p>
+        <div class="key-points">
+          <div class="key-point">
+            <div class="kp-label">Input Layer</div>
+            <p>Receives raw data — pixels, numbers, embeddings. No computation, just representation.</p>
+          </div>
+          <div class="key-point">
+            <div class="kp-label">Hidden Layers</div>
+            <p>Where the learning happens. Each layer extracts increasingly abstract features from the previous layer.</p>
+          </div>
+          <div class="key-point">
+            <div class="kp-label">Output Layer</div>
+            <p>Produces the final prediction — a class probability, a number, a label.</p>
+          </div>
+        </div>
+        <div class="diagram-wrap">
+          <svg class="diagram-canvas" viewBox="0 0 620 240" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="ng-ann" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#4f8ef7" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#4f8ef7" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <!-- connections -->
+            <g stroke="#1e2d4a" stroke-width="1" opacity="0.6">
+              <!-- input→hidden1 -->
+              <line x1="80" y1="60"  x2="220" y2="40"/><line x1="80" y1="60"  x2="220" y2="100"/><line x1="80" y1="60"  x2="220" y2="160"/><line x1="80" y1="60"  x2="220" y2="200"/>
+              <line x1="80" y1="120" x2="220" y2="40"/><line x1="80" y1="120" x2="220" y2="100"/><line x1="80" y1="120" x2="220" y2="160"/><line x1="80" y1="120" x2="220" y2="200"/>
+              <line x1="80" y1="180" x2="220" y2="40"/><line x1="80" y1="180" x2="220" y2="100"/><line x1="80" y1="180" x2="220" y2="160"/><line x1="80" y1="180" x2="220" y2="200"/>
+              <!-- hidden1→hidden2 -->
+              <line x1="260" y1="40"  x2="380" y2="60"/><line x1="260" y1="40"  x2="380" y2="120"/><line x1="260" y1="40"  x2="380" y2="180"/>
+              <line x1="260" y1="100" x2="380" y2="60"/><line x1="260" y1="100" x2="380" y2="120"/><line x1="260" y1="100" x2="380" y2="180"/>
+              <line x1="260" y1="160" x2="380" y2="60"/><line x1="260" y1="160" x2="380" y2="120"/><line x1="260" y1="160" x2="380" y2="180"/>
+              <line x1="260" y1="200" x2="380" y2="60"/><line x1="260" y1="200" x2="380" y2="120"/><line x1="260" y1="200" x2="380" y2="180"/>
+              <!-- hidden2→output -->
+              <line x1="420" y1="60"  x2="540" y2="90"/><line x1="420" y1="60"  x2="540" y2="150"/>
+              <line x1="420" y1="120" x2="540" y2="90"/><line x1="420" y1="120" x2="540" y2="150"/>
+              <line x1="420" y1="180" x2="540" y2="90"/><line x1="420" y1="180" x2="540" y2="150"/>
+            </g>
+            <!-- input neurons -->
+            <g fill="#4f8ef7"><circle cx="80" cy="60" r="18"/><circle cx="80" cy="120" r="18"/><circle cx="80" cy="180" r="18"/></g>
+            <!-- hidden 1 -->
+            <g fill="#243560"><circle cx="240" cy="40" r="18"/><circle cx="240" cy="100" r="18"/><circle cx="240" cy="160" r="18"/><circle cx="240" cy="200" r="18"/></g>
+            <!-- hidden 2 -->
+            <g fill="#1a2340"><circle cx="400" cy="60" r="18"/><circle cx="400" cy="120" r="18"/><circle cx="400" cy="180" r="18"/></g>
+            <!-- output -->
+            <g fill="#7c5cfc"><circle cx="540" cy="90" r="18"/><circle cx="540" cy="150" r="18"/></g>
+            <!-- labels -->
+            <g fill="#4d6490" font-family="Space Mono, monospace" font-size="10" text-anchor="middle">
+              <text x="80" y="215">Input</text>
+              <text x="240" y="225">Hidden 1</text>
+              <text x="400" y="210">Hidden 2</text>
+              <text x="540" y="180">Output</text>
+            </g>
+          </svg>
+          <div class="diagram-label">A fully-connected ANN with 3 inputs, 2 hidden layers, and 2 outputs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEURON -->
+    <div class="content-block" id="block-neuron">
+      <div class="content-section">
+        <h3>The Neuron — One Unit</h3>
+        <p>Each neuron does three things: receives weighted inputs, sums them up (with a bias), then applies an activation function to produce an output.</p>
+        <div class="formula-box">output = activation( Σ(wᵢ · xᵢ) + b )</div>
+        <div class="key-points">
+          <div class="key-point"><div class="kp-label">xᵢ</div><p>Inputs — numbers coming from the previous layer or raw data.</p></div>
+          <div class="key-point"><div class="kp-label">wᵢ</div><p>Weights — learned parameters that scale each input's contribution.</p></div>
+          <div class="key-point"><div class="kp-label">b</div><p>Bias — a learnable offset, shifts the activation threshold.</p></div>
+          <div class="key-point"><div class="kp-label">activation</div><p>Non-linear function (ReLU, sigmoid…) — without this, the whole network collapses to a single linear function.</p></div>
+        </div>
+        <div class="highlight-box">
+          <strong>Analogy</strong>
+          Think of a neuron as a voting booth. Each input votes with a certain weight. The bias is the minimum score needed to fire. The activation decides if the result crosses the threshold.
+        </div>
+      </div>
+    </div>
+
+    <!-- FORWARD PASS -->
+    <div class="content-block" id="block-forward">
+      <div class="content-section">
+        <h3>Forward Pass</h3>
+        <p>The forward pass is simply running data through the network from left to right — input layer → hidden layers → output. Each layer transforms the data.</p>
+        <div class="formula-box">
+Layer 1: h¹ = activation(W¹ · x + b¹)
+Layer 2: h² = activation(W² · h¹ + b²)
+Output:  ŷ  = softmax(W³ · h² + b³)
+        </div>
+        <p>In matrix form, each layer is just: <code style="color:var(--accent3)">h = σ(Wx + b)</code>. Training means finding the right values of <strong>W</strong> and <strong>b</strong>.</p>
+        <div class="highlight-box">
+          <strong>Why layers?</strong>
+          Each layer learns a different level of abstraction. Early layers detect simple patterns (edges, numbers), later layers combine them into complex concepts (faces, words).
+        </div>
+      </div>
+      <div class="content-section">
+        <h3>Loss Function</h3>
+        <p>Once we have an output ŷ, we compare it to the true label y using a <strong>loss function</strong>. The loss quantifies how wrong the network is.</p>
+        <div class="key-points">
+          <div class="key-point"><div class="kp-label">MSE</div><p>Mean Squared Error — for regression tasks: L = (1/n) Σ(y − ŷ)²</p></div>
+          <div class="key-point"><div class="kp-label">Cross-Entropy</div><p>For classification: L = −Σ y·log(ŷ). Penalises confident wrong predictions heavily.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BACKPROP -->
+    <div class="content-block" id="block-backprop">
+      <div class="content-section">
+        <h3>Backpropagation</h3>
+        <p>Backprop is how a network learns. It propagates the error signal <em>backwards</em> through the network, computing how much each weight contributed to the mistake — then adjusts them.</p>
+        <div class="highlight-box">
+          <strong>The chain rule</strong>
+          Backprop is just the chain rule of calculus applied repeatedly. The gradient of the loss w.r.t. any weight is the product of gradients along the path from that weight to the output.
+        </div>
+        <div class="formula-box">
+∂L/∂W = ∂L/∂ŷ · ∂ŷ/∂h · ∂h/∂W
+
+Weight update:
+W ← W − η · ∂L/∂W
+        </div>
+        <div class="key-points">
+          <div class="key-point"><div class="kp-label">η (eta)</div><p>Learning rate — how large a step to take each update. Too large → overshoot. Too small → slow.</p></div>
+          <div class="key-point"><div class="kp-label">Gradient</div><p>Direction of steepest ascent in loss space. We step in the negative direction to descend.</p></div>
+          <div class="key-point"><div class="kp-label">Epoch</div><p>One full pass of the entire training dataset through forward + backward pass.</p></div>
+          <div class="key-point"><div class="kp-label">Mini-batch</div><p>Training on small subsets (e.g. 32 samples) rather than all data at once — more efficient.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVATIONS -->
+    <div class="content-block" id="block-activations">
+      <div class="content-section">
+        <h3>Activation Functions</h3>
+        <p>Without activation functions, stacking layers adds no expressive power — they'd all collapse into a single linear transformation. Non-linearities are what let networks learn complex patterns.</p>
+        <div class="key-points">
+          <div class="key-point">
+            <div class="kp-label">Sigmoid</div>
+            <p>σ(x) = 1/(1+e⁻ˣ) → output in (0,1). Used in output layers for binary classification. Suffers from vanishing gradients.</p>
+          </div>
+          <div class="key-point">
+            <div class="kp-label">Tanh</div>
+            <p>tanh(x) → output in (−1,1). Zero-centered — often better than sigmoid for hidden layers.</p>
+          </div>
+          <div class="key-point">
+            <div class="kp-label">ReLU</div>
+            <p>f(x) = max(0, x). Default choice for hidden layers. Fast, no vanishing gradient for positive inputs.</p>
+          </div>
+          <div class="key-point">
+            <div class="kp-label">Softmax</div>
+            <p>Converts a vector of scores into a probability distribution summing to 1. Standard output for multi-class classification.</p>
+          </div>
+        </div>
+        <div class="highlight-box">
+          <strong>Rule of thumb</strong>
+          Use ReLU (or LeakyReLU) for hidden layers. Use Sigmoid for binary output, Softmax for multi-class output. Avoid Sigmoid/Tanh in deep hidden layers — they saturate and kill gradients.
+        </div>
+      </div>
+    </div>
+
+    <!-- MARK DONE -->
+    <div class="topic-complete-bar">
+      <p>Finished reading? Mark this topic complete to track your progress.</p>
+      <button class="btn-complete" id="btn-done" onclick="markDone()">
+        <span>✓</span> Mark as Complete
+      </button>
+    </div>
+
+    <!-- NEXT NAV -->
+    <div class="topic-next-nav">
+      <div></div>
+      <a class="next-card right" href="cnn.html">
+        <span class="next-label">Next →</span>
+        <span class="next-title">CNN — Convolutional Neural Networks</span>
+      </a>
+    </div>
+  </div>
+
+  <footer style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--font-mono);font-size:.72rem;border-top:1px solid var(--border)">NeuroLearn</footer>
+</div>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" id="modal-close">✕</button>
+    <h2>Sign in to save progress</h2>
+    <p>Track which topics you've completed.</p>
+    <button class="btn-google" id="btn-google-signin">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+      Continue with Google
+    </button>
+  </div>
+</div>
+
+<script type="module">
+  import { initApp, currentUser, openAuthModal, showToast } from '../app.js';
+  import { db, doc, updateDoc } from '../firebase.js';
+
+  function showSection(id) {
+    document.querySelectorAll('.content-block').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    document.getElementById('block-' + id)?.classList.add('active');
+    event.target.classList.add('active');
+  }
+  window.showSection = showSection;
+
+  async function markDone() {
+    if (!currentUser) { openAuthModal(); return; }
+    try {
+      await updateDoc(doc(db, 'users', currentUser.uid), { 'completed.ann': true });
+      const btn = document.getElementById('btn-done');
+      btn.classList.add('done');
+      btn.innerHTML = '<span>✓</span> Completed!';
+      showToast('🎉 ANN marked complete!', 'success');
+    } catch(e) { showToast('Error saving progress', 'error'); }
+  }
+  window.markDone = markDone;
+
+  initApp((user, profile) => {
+    if (profile?.completed?.ann) {
+      const btn = document.getElementById('btn-done');
+      if (btn) { btn.classList.add('done'); btn.innerHTML = '<span>✓</span> Completed!'; }
+    }
+  });
+</script>
+</body>
+</html>

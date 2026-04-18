@@ -1,70 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>NeuronLearningWeb</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuroLearn — Understand Neural Networks</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-    <!-- Navigation -->
-    <header class="navbar">
-        <div class="logo">🧠 NeuroLearn</div>
-        <nav>
-            <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="learn.html">Learn</a></li>
-                <li><a href="daily.html">Daily Quiz</a></li>
-                <li><a href="profile.html">Profile</a></li>
-            </ul>
-        </nav>
-    </header>
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="index.html">
+    <span class="dot"></span> NeuroLearn
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="learn.html">Learn</a></li>
+    <li><a href="quiz.html">Daily Quiz</a></li>
+    <li><a href="leaderboard.html">Leaderboard</a></li>
+    <li><a href="glossary.html">Glossary</a></li>
+    <li><a href="profile.html">Profile</a></li>
+  </ul>
+  <div class="nav-user">
+    <span class="nav-streak" id="nav-streak" style="display:none"></span>
+    <span class="nav-points" id="nav-points" style="display:none"></span>
+    <button class="btn-nav" id="btn-signin">Sign in</button>
+    <button class="btn-nav" id="btn-signout" style="display:none">Sign out</button>
+  </div>
+</nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Learn Neural Networks Visually</h1>
-            <p>Build, train, and understand neural networks step by step — interactively and intuitively.</p>
-            <button class="cta-btn">Start Learning</button>
+<!-- ── HERO ── -->
+<div class="page">
+  <section class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-tag">Interactive Learning Platform</div>
+    <h1>Understand<br><span class="grad">Neural Networks</span><br>from scratch</h1>
+    <p>From Perceptrons to Transformers — learn with visual diagrams, daily quizzes, and a streak system that keeps you going.</p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="learn.html">Start Learning →</a>
+      <a class="btn btn-secondary" href="quiz.html">Today's Quiz</a>
+    </div>
+  </section>
+
+  <!-- ── LEARNING PATH ── -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-label">Curriculum</div>
+      <h2>Five Topics, One Clear Path</h2>
+      <p>Each topic builds on the last. No prerequisites needed.</p>
+    </div>
+    <div class="path-grid" id="path-grid">
+      <a class="path-card" data-topic="ann" href="topics/ann.html">
+        <div class="path-icon">🧠</div>
+        <div>
+          <div class="path-tag">Foundation</div>
+          <div class="path-title">ANN</div>
+          <div class="path-desc">Artificial Neural Networks — neurons, weights, activation functions, backpropagation.</div>
         </div>
-    </section>
-
-    <!-- Learning Paths -->
-    <section class="learning-section">
-        <h2>Learning Paths</h2>
-
-        <div class="card-container">
-            <div class="card">
-                <h3>Neural Network Basics</h3>
-                <p>Understand neurons, activation functions, forward propagation, and backpropagation.</p>
-                <button>Explore</button>
-            </div>
-
-            <div class="card">
-                <h3>Deep Learning</h3>
-                <p>Dive into CNNs, RNNs, optimization techniques, and advanced architectures.</p>
-                <button>Explore</button>
-            </div>
-
-            <div class="card">
-                <h3>Computer Vision</h3>
-                <p>Learn how machines interpret images using convolutional neural networks.</p>
-                <button>Explore</button>
-            </div>
+        <div class="path-progress">
+          <div class="progress-bar"><div class="progress-fill" id="prog-ann" style="width:0%"></div></div>
+          <span class="progress-pct" id="pct-ann">0%</span>
         </div>
-    </section>
+      </a>
+      <a class="path-card" data-topic="cnn" href="topics/cnn.html">
+        <div class="path-icon">🖼️</div>
+        <div>
+          <div class="path-tag">Vision</div>
+          <div class="path-title">CNN</div>
+          <div class="path-desc">Convolutional Neural Networks — filters, pooling, feature maps, image recognition.</div>
+        </div>
+        <div class="path-progress">
+          <div class="progress-bar"><div class="progress-fill" id="prog-cnn" style="width:0%"></div></div>
+          <span class="progress-pct" id="pct-cnn">0%</span>
+        </div>
+      </a>
+      <a class="path-card" data-topic="rnn" href="topics/rnn.html">
+        <div class="path-icon">🔄</div>
+        <div>
+          <div class="path-tag">Sequence</div>
+          <div class="path-title">RNN</div>
+          <div class="path-desc">Recurrent Neural Networks — hidden state, sequential data, vanishing gradients.</div>
+        </div>
+        <div class="path-progress">
+          <div class="progress-bar"><div class="progress-fill" id="prog-rnn" style="width:0%"></div></div>
+          <span class="progress-pct" id="pct-rnn">0%</span>
+        </div>
+      </a>
+      <a class="path-card" data-topic="lstm" href="topics/lstm.html">
+        <div class="path-icon">🧩</div>
+        <div>
+          <div class="path-tag">Memory</div>
+          <div class="path-title">LSTM</div>
+          <div class="path-desc">Long Short-Term Memory — gates, cell state, long-range dependencies.</div>
+        </div>
+        <div class="path-progress">
+          <div class="progress-bar"><div class="progress-fill" id="prog-lstm" style="width:0%"></div></div>
+          <span class="progress-pct" id="pct-lstm">0%</span>
+        </div>
+      </a>
+      <a class="path-card" data-topic="transformer" href="topics/transformer.html">
+        <div class="path-icon">⚡</div>
+        <div>
+          <div class="path-tag">State of the Art</div>
+          <div class="path-title">Transformer</div>
+          <div class="path-desc">Self-attention, multi-head attention, positional encoding, encoder-decoder.</div>
+        </div>
+        <div class="path-progress">
+          <div class="progress-bar"><div class="progress-fill" id="prog-transformer" style="width:0%"></div></div>
+          <span class="progress-pct" id="pct-transformer">0%</span>
+        </div>
+      </a>
+    </div>
+  </section>
 
-    <!-- Daily Challenge -->
-    <section class="challenge">
-        <h2>Daily Challenge</h2>
-        <a href="daily.html">Test your understanding with a new neural network problem every day.</a>
-    </section>
+  <!-- ── FEATURES ── -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-label">Features</div>
+      <h2>Built for real understanding</h2>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1rem;">
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:.75rem">📅</div>
+        <div style="font-family:var(--font-display);font-weight:700;margin-bottom:.4rem">Daily Quiz</div>
+        <div style="color:var(--text2);font-size:.85rem">New questions every 24 hours. Earn points, build your streak, climb the leaderboard.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:.75rem">🔥</div>
+        <div style="font-family:var(--font-display);font-weight:700;margin-bottom:.4rem">Streak System</div>
+        <div style="color:var(--text2);font-size:.85rem">Come back every day to keep your streak alive — just like Duolingo but for deep learning.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:.75rem">📖</div>
+        <div style="font-family:var(--font-display);font-weight:700;margin-bottom:.4rem">Glossary</div>
+        <div style="color:var(--text2);font-size:.85rem">Searchable definitions for every term — backprop, softmax, gradient descent, and more.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:.75rem">🏆</div>
+        <div style="font-family:var(--font-display);font-weight:700;margin-bottom:.4rem">Leaderboard</div>
+        <div style="color:var(--text2);font-size:.85rem">Weekly ranking of top learners. See where you stand and compete with others.</div>
+      </div>
+    </div>
+  </section>
 
-    <!-- Footer -->
-    <footer>
-        <p>© 2026 NeuroLearn | Built for AI Enthusiasts</p>
-    </footer>
+  <footer style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--font-mono);font-size:.72rem;border-top:1px solid var(--border)">
+    NeuroLearn — Learn AI Visually
+  </footer>
+</div>
 
+<!-- ── AUTH MODAL ── -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" id="modal-close">✕</button>
+    <h2>Welcome back</h2>
+    <p>Sign in to track your progress, streaks, and quiz points.</p>
+    <button class="btn-google" id="btn-google-signin">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+      Continue with Google
+    </button>
+  </div>
+</div>
+
+<script type="module">
+  import { initApp } from './app.js';
+
+  initApp((user, profile) => {
+    if (!profile) return;
+    const topics = ['ann','cnn','rnn','lstm','transformer'];
+    topics.forEach(t => {
+      const done = profile.completed?.[t] || false;
+      const pct  = done ? 100 : 0;
+      const fill = document.getElementById(`prog-${t}`);
+      const label = document.getElementById(`pct-${t}`);
+      if (fill)  fill.style.width = pct + '%';
+      if (label) label.textContent = pct + '%';
+    });
+  });
+</script>
 </body>
 </html>
