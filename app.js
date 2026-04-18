@@ -53,24 +53,33 @@ export async function fetchUserProfile(uid) {
 }
 
 // ── NAV UI ─────────────────────────────────────────────────────────────────
-function updateNavUI(user) {
-  const btnSign  = document.getElementById('btn-signin');
-  const btnOut   = document.getElementById('btn-signout');
+function updateNavUI(user, profile) {
+  const btnSign   = document.getElementById('btn-signin');
+  const btnOut    = document.getElementById('btn-signout');
   const navStreak = document.getElementById('nav-streak');
   const navPts    = document.getElementById('nav-points');
 
-  if (user && userProfile) {
-    btnSign  && (btnSign.style.display  = 'none');
-    btnOut   && (btnOut.style.display   = 'inline-flex');
-    navStreak && (navStreak.textContent = `🔥 ${userProfile.streak || 0}`);
-    navStreak && (navStreak.style.display = 'inline');
-    navPts   && (navPts.textContent    = `⚡ ${userProfile.points || 0} pts`);
-    navPts   && (navPts.style.display  = 'inline');
+  if (user) {
+    // User is signed in — hide sign-in button immediately
+    btnSign && (btnSign.style.display = 'none');
+    btnOut  && (btnOut.style.display  = 'inline-flex');
+    // Show streak/points only if profile data is available
+    if (profile) {
+      if (navStreak) {
+        navStreak.textContent  = `🔥 ${profile.streak || 0}`;
+        navStreak.style.display = 'inline';
+      }
+      if (navPts) {
+        navPts.textContent  = `⚡ ${profile.points || 0} pts`;
+        navPts.style.display = 'inline';
+      }
+    }
   } else {
-    btnSign  && (btnSign.style.display  = 'inline-flex');
-    btnOut   && (btnOut.style.display   = 'none');
+    // Not signed in
+    btnSign  && (btnSign.style.display   = 'inline-flex');
+    btnOut   && (btnOut.style.display    = 'none');
     navStreak && (navStreak.style.display = 'none');
-    navPts   && (navPts.style.display  = 'none');
+    navPts   && (navPts.style.display   = 'none');
   }
 }
 
@@ -123,11 +132,14 @@ export function initApp(onUser) {
   onAuthStateChanged(auth, async user => {
     currentUser = user;
     if (user) {
+      // Immediately hide sign-in button — don't wait for profile fetch
+      updateNavUI(user, null);
+      // Then fetch profile and update nav with streak/points
       userProfile = await fetchUserProfile(user.uid);
-      updateNavUI(user);
+      updateNavUI(user, userProfile);
     } else {
       userProfile = null;
-      updateNavUI(null);
+      updateNavUI(null, null);
     }
     onUser && onUser(user, userProfile);
   });

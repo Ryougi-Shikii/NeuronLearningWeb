@@ -123,6 +123,7 @@ nav {
   align-items: center;
   gap: 0.1rem;
   list-style: none;
+  height: 100%;
 }
 
 .nav-links a {
@@ -132,11 +133,27 @@ nav {
   text-decoration: none;
   padding: 0.4rem 0.75rem;
   border-radius: var(--radius-xs);
-  transition: var(--transition);
+  transition: color 0.15s ease, background-color 0.15s ease;
+  /* Reserve space for the active background so layout never shifts */
+  display: inline-block;
+  position: relative;
 }
 
 .nav-links a:hover { color: var(--text); background: var(--bg2); }
 .nav-links a.active { color: var(--ann); background: var(--ann-soft); }
+
+/* Subtle animated underline on active instead of background shift */
+.nav-links a.active::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 0.75rem;
+  right: 0.75rem;
+  height: 1.5px;
+  background: var(--ann);
+  border-radius: 1px;
+  opacity: 0.5;
+}
 
 .nav-user { display: flex; align-items: center; gap: 0.6rem; }
 
