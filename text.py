@@ -15,6 +15,6 @@ Streak system — come back daily, keep your streak alive (like Duolingo)
 Glossary — searchable terms (backprop, gradient, softmax, etc.)
 
 
-
+visit: https://neurolearn-a2ec9.web.app/
 
 '''
